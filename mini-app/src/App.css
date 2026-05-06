@@ -49,3 +49,21 @@ body {
     transform: rotate(360deg);
   }
 }
+
+.redirect-button {
+  appearance: none;
+  margin: 0;
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #fff;
+  background: #3390ec;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.redirect-button:active {
+  opacity: 0.92;
+}
