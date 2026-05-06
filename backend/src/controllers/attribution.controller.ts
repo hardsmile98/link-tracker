@@ -8,7 +8,7 @@ import { parseInitData, verifyTelegramInitData } from "../utils/telegram";
 const attributionService = new AttributionService();
 
 const linkSchema = z.object({
-  click_id: z.string().uuid(),
+  click_id: z.string().uuid().optional(),
   telegram_user_id: z.coerce.bigint(),
   init_data: z.string().min(1).optional()
 });
@@ -37,6 +37,7 @@ export async function linkAttribution(req: Request, res: Response) {
   const parsedInitData = parseInitData(initData);
 
   const userJson = parsedInitData.user;
+
   if (!userJson) {
     throw new AppError("Telegram initData does not contain user", 401);
   }
@@ -47,8 +48,12 @@ export async function linkAttribution(req: Request, res: Response) {
     throw new AppError("telegram_user_id mismatch with Telegram initData", 401);
   }
 
+  const clickIdFromStartParam = parsedInitData.start_param;
+
+  const clickId = payload.click_id ?? clickIdFromStartParam;
+
   const attribution = await attributionService.linkAttribution({
-    clickUuid: payload.click_id,
+    clickUuid: clickId ?? null,
     telegramUserId: payload.telegram_user_id
   });
 
@@ -56,9 +61,7 @@ export async function linkAttribution(req: Request, res: Response) {
     success: true,
     data: {
       id: attribution.id,
-      click_id: attribution.clickUuid,
-      telegram_user_id: attribution.telegramUserId.toString(),
-      created_at: attribution.createdAt
+      redirect_url: env.TELEGRAM_PRIVATE_CHAT_URL
     }
   });
 }
