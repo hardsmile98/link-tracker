@@ -4,7 +4,7 @@
     function buildTrackingUrl() {
       const currentUrl = new URL(window.location.href);
   
-      const trackingUrl = new URL(`${TRACKING_DOMAIN}/api/track`);
+      const trackingUrl = new URL(`${TRACKING_DOMAIN}/api/click`);
   
       currentUrl.searchParams.forEach((value, key) => {
         trackingUrl.searchParams.set(key, value);
