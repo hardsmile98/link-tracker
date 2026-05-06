@@ -82,7 +82,7 @@ function App() {
   const openRedirect = () => {
     if (!redirectUrl) return;
 
-    window.Telegram?.WebApp?.openLink(redirectUrl, { try_instant_view: true });
+    window.Telegram?.WebApp?.openTelegramLink(redirectUrl);
   };
 
   return (
