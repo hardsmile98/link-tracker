@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Click {
+  id          String        @id @default(uuid()) @db.Uuid
+  createdAt   DateTime      @default(now()) @map("created_at")
+  referrer    String?       @db.Text
+  userAgent   String?       @map("user_agent") @db.Text
+  ip          String?       @db.VarChar(64)
+  queryParams Json          @map("query_params")
+  attribution Attribution[]
+
+  @@index([createdAt])
+  @@map("clicks")
+}
+
+model Attribution {
+  id             String   @id @default(uuid()) @db.Uuid
+  clickUuid      String   @map("click_id") @db.Uuid
+  telegramUserId BigInt   @map("telegram_user_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  click          Click    @relation(fields: [clickUuid], references: [id], onDelete: Restrict)
+
+  @@unique([clickUuid, telegramUserId])
+  @@index([telegramUserId, createdAt])
+  @@map("attributions")
+}
