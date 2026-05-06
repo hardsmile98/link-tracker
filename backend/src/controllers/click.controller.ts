@@ -41,7 +41,7 @@ export async function handleClick(req: Request, res: Response) {
     ip: getClientIp(req) ?? null,
   });
 
-  const redirectUrl = new URL(`https://t.me/${env.TELEGRAM_BOT_USERNAME}/${env.TELEGRAM_MINI_APP_SHORT_NAME}`);
+  const redirectUrl = new URL(`https://t.me/${env.TELEGRAM_BOT_USERNAME}`);
 
   redirectUrl.searchParams.set("startapp", click.id);
 
