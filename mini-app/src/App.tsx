@@ -66,8 +66,7 @@ function App() {
           return
         }
 
-        webApp.openLink(redirectUrl, { try_instant_view: true })
-        webApp.close()
+        webApp.openTelegramLink(redirectUrl)
       } catch {
         setMessage('Ошибка сети при обращении к backend.')
         setIsLoading(false)
