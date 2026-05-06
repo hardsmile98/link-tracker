@@ -68,6 +68,7 @@ function App() {
         }
 
         setRedirectUrl(redirectUrl);
+        webApp.openTelegramLink(redirectUrl);
         setIsLoading(false);
       } catch {
         setMessage("Ошибка сети при обращении к backend.");
@@ -79,7 +80,6 @@ function App() {
   }, []);
 
   const openRedirect = () => {
-    if (!redirectUrl) return;
     window.Telegram?.WebApp?.openTelegramLink(redirectUrl);
   };
 
