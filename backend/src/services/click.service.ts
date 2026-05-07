@@ -1,4 +1,3 @@
-import { customAlphabet } from "nanoid";
 import { prisma } from "../config/prisma";
 
 
@@ -23,6 +22,8 @@ export class ClickService {
   public async createClick(input: CreateClickInput) {
 
     const formattedReferrer = formatReferrer(input.referrer);
+
+    console.log(input.referrer);
 
     const click = await prisma.click.create({
       data: {
