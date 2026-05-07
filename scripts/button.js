@@ -1,5 +1,9 @@
 (function () {
     const TRACKING_DOMAIN = 'https://tracking.ghatgp2o.beget.tech';
+
+    const TRACKING_COOKIES= [
+      '_subid',
+    ]
   
     function buildTrackingUrl() {
       const currentUrl = new URL(window.location.href);
@@ -9,7 +13,15 @@
       currentUrl.searchParams.forEach((value, key) => {
         trackingUrl.searchParams.set(key, value);
       });
+
+      TRACKING_COOKIES.forEach(cookie => {
+        const value = document.cookie.split('; ').find(row => row.startsWith(`${cookie}=`))?.split('=')[1];
   
+        if (value) {
+          trackingUrl.searchParams.set(cookie, value);
+        }
+      });
+
       return trackingUrl.toString();
     }
   
