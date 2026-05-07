@@ -10,7 +10,6 @@ const envSchema = z.object({
   TELEGRAM_BOT_TOKEN: z.string().min(1),
   TELEGRAM_BOT_USERNAME: z.string().min(1),
   TELEGRAM_MINI_APP_SHORT_NAME: z.string().min(1),
-  TELEGRAM_PRIVATE_CHAT_URL: z.string().min(1),
   ADMIN_LOGIN: z.string().min(1),
   ADMIN_PASSWORD: z.string().min(1),
   CORS_ORIGIN: z.string().default("*"),
