@@ -41,3 +41,20 @@ model RedirectRule {
   @@index([createdAt])
   @@map("redirect_rules")
 }
+
+enum AdAccountPlatform {
+  facebook
+  tiktok
+}
+
+model AdAccount {
+  id        String            @id @default(uuid()) @db.Uuid
+  platform  AdAccountPlatform
+  name      String            @db.Text
+  pixelId   String            @map("pixel_id") @db.Text
+  accessKey String            @map("access_key") @db.Text
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  @@index([platform, createdAt])
+  @@map("ad_accounts")
+}

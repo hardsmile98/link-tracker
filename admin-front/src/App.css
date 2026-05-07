@@ -51,6 +51,16 @@ input {
   font-size: 14px;
 }
 
+select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  background: #fff;
+}
+
 button {
   border: none;
   border-radius: 8px;
@@ -58,6 +68,13 @@ button {
   color: #fff;
   padding: 10px 14px;
   cursor: pointer;
+}
+
+.button-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 
 .button-secondary {

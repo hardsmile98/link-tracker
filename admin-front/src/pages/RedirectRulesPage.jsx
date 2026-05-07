@@ -1,4 +1,4 @@
-import { Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useGetMeQuery, useLogoutMutation } from "../features/auth/api/authApi";
 import {
   useCreateRedirectRuleMutation,
@@ -53,14 +53,19 @@ export function RedirectRulesPage() {
     <main className="container">
       <section className="card topbar">
         <h1>Админка редиректов</h1>
-        <button
-          type="button"
-          onClick={() => void handleLogout()}
-          className="button-secondary"
-          disabled={isLogoutLoading}
-        >
-          Выйти
-        </button>
+        <div className="actions">
+          <Link to="/ad-accounts" className="button-link button-secondary">
+            Рекламные аккаунты
+          </Link>
+          <button
+            type="button"
+            onClick={() => void handleLogout()}
+            className="button-secondary"
+            disabled={isLogoutLoading}
+          >
+            Выйти
+          </button>
+        </div>
       </section>
 
       <CreateRuleForm

@@ -25,7 +25,7 @@ export const authApi = baseApi.injectEndpoints({
         method: "POST",
       }),
       transformResponse: (response) => response.data,
-      invalidatesTags: ["Auth", "RedirectRules"],
+      invalidatesTags: ["Auth", "RedirectRules", "AdAccounts"],
     }),
   }),
 });
