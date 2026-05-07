@@ -1,6 +1,10 @@
 (function () {
     const TRACKING_DOMAIN = 'https://tracking.ghatgp2o.beget.tech';
 
+    const subId = `{sub_id}`;
+
+    console.log(subId);
+
     function buildTrackingUrl() {
       const currentUrl = new URL(window.location.href);
   
