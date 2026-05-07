@@ -61,7 +61,7 @@ select {
   background: #fff;
 }
 
-button {
+.button, button {
   border: none;
   border-radius: 8px;
   background: #2563eb;
@@ -71,10 +71,9 @@ button {
 }
 
 .button-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
   text-decoration: none;
+  font-size: 14px;
 }
 
 .button-secondary {

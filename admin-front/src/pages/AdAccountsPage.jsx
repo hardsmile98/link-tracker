@@ -50,7 +50,7 @@ export function AdAccountsPage() {
       <section className="card topbar">
         <h1>Админка рекламных аккаунтов</h1>
         <div className="actions">
-          <Link to="/" className="button-link button-secondary">
+          <Link to="/" className="button button-link button-secondary">
             Редиректы
           </Link>
           <button

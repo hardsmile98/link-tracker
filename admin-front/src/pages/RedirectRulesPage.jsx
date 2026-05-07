@@ -54,9 +54,10 @@ export function RedirectRulesPage() {
       <section className="card topbar">
         <h1>Админка редиректов</h1>
         <div className="actions">
-          <Link to="/ad-accounts" className="button-link button-secondary">
+          <Link to="/ad-accounts" className="button button-link button-secondary">
             Рекламные аккаунты
           </Link>
+
           <button
             type="button"
             onClick={() => void handleLogout()}
