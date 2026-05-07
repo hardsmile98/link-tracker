@@ -36,7 +36,6 @@ export async function handleClick(req: Request, res: Response) {
 
   const click = await clickService.createClick({
     queryParams,
-    referrer: req.get("referer") ?? '',
     userAgent: req.get("user-agent") ?? null,
     ip: getClientIp(req) ?? null,
   });
