@@ -5,28 +5,11 @@ type LinkAttributionInput = {
   telegramUserId: bigint;
 };
 
-const formatReferrer = (referrer: string | null): string | null => {
-  if (!referrer) {
-    return null;
-  }
-
-  try {
-    const url = new URL(referrer);
-
-    return `${url.origin}${url.pathname}`;
-  } catch (error) {
-    return null;
-  }
-};
-
 export class AttributionService {
   private async resolveRedirectUrl(referrer: string | null) {
-    const formattedReferrer = formatReferrer(referrer);
-
-    if (formattedReferrer) {
-
+    if (referrer) {
       const matchedRule = await prisma.redirectRule.findUnique({
-        where: { referrer: formattedReferrer },
+        where: { referrer },
         select: { redirectUrl: true }
       });
 
