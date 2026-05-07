@@ -10,7 +10,7 @@ type CreateClickInput = {
 export class ClickService {
   public async createClick(input: CreateClickInput) {
 
-    const referrer = input.queryParams.referrer;
+    const referrer = input.queryParams.referrer as string | undefined ?? null;
 
     const click = await prisma.click.create({
       data: {
