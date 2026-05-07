@@ -2,8 +2,15 @@
     const TRACKING_DOMAIN = 'https://tracking.ghatgp2o.beget.tech';
 
     const TRACKING_COOKIES= [
+      'subid',
       '_subid',
     ]
+
+    function getCookie (name) {
+      var v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)')
+      var value = v ? v[2] : null
+      return value && value !== 'undefined' ? value : null
+  }
   
     function buildTrackingUrl() {
       const currentUrl = new URL(window.location.href);
@@ -15,7 +22,7 @@
       });
 
       TRACKING_COOKIES.forEach(cookie => {
-        const value = document.cookie.split('; ').find(row => row.startsWith(`${cookie}=`))?.split('=')[1];
+        const value = getCookie(cookie);
   
         if (value) {
           trackingUrl.searchParams.set(cookie, value);
