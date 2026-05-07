@@ -1,6 +1,11 @@
 (function () {
   const SCRIPT_ID = "tracking-script";
 
+  function getReferrer() {
+    const referrerUrl = new URL(window.location.href);
+    return `${referrerUrl.origin}${referrerUrl.pathname}`;
+  }
+
   function getScriptConfig() {
     const script = document.getElementById(SCRIPT_ID) || document.currentScript;
     if (!script) {
@@ -36,6 +41,8 @@
     if (config.scriptTargetFbp) {
       trackingUrl.searchParams.set("fbp", config.scriptTargetFbp);
     }
+
+    trackingUrl.searchParams.set("referrer", getReferrer());
 
     return trackingUrl.toString();
   }
