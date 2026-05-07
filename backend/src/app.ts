@@ -3,8 +3,10 @@ import express from "express";
 import { env } from "./config/env";
 import { errorHandler } from "./middleware/error-handler";
 import { requestLogger } from "./middleware/request-logger";
+import { adminAuthRouter } from "./routes/admin-auth.routes";
 import { attributionRouter } from "./routes/attribution.routes";
 import { clickRouter } from "./routes/click.routes";
+import { redirectRuleRouter } from "./routes/redirect-rule.routes";
 
 export const app = express();
 
@@ -27,5 +29,7 @@ app.get("/health", (_req, res) => {
 
 app.use(clickRouter);
 app.use(attributionRouter);
+app.use(adminAuthRouter);
+app.use(redirectRuleRouter);
 
 app.use(errorHandler);

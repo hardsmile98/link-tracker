@@ -52,7 +52,7 @@ export async function linkAttribution(req: Request, res: Response) {
 
   const clickId = payload.click_id ?? clickIdFromStartParam;
 
-  const attribution = await attributionService.linkAttribution({
+  const result = await attributionService.linkAttribution({
     clickUuid: clickId ?? null,
     telegramUserId: payload.telegram_user_id
   });
@@ -60,8 +60,8 @@ export async function linkAttribution(req: Request, res: Response) {
   res.status(201).json({
     success: true,
     data: {
-      id: attribution.id,
-      redirect_url: env.TELEGRAM_PRIVATE_CHAT_URL
+      id: result.attribution.id,
+      redirect_url: result.redirectUrl
     }
   });
 }
