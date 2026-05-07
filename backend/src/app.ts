@@ -8,6 +8,7 @@ import { adminAuthRouter } from "./routes/admin-auth.routes";
 import { attributionRouter } from "./routes/attribution.routes";
 import { clickRouter } from "./routes/click.routes";
 import { redirectRuleRouter } from "./routes/redirect-rule.routes";
+import { telegramTrackerRouter } from "./routes/telegram-tracker.routes";
 
 export const app = express();
 
@@ -33,5 +34,6 @@ app.use(attributionRouter);
 app.use(adminAuthRouter);
 app.use(redirectRuleRouter);
 app.use(adAccountRouter);
+app.use(telegramTrackerRouter);
 
 app.use(errorHandler);

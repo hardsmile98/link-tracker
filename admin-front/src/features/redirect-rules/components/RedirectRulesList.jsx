@@ -1,6 +1,14 @@
 import { useState } from "react";
 
-export function RedirectRulesList({ rules, isLoading, onRefresh, onUpdate, onDelete, isMutating }) {
+export function RedirectRulesList({
+  rules,
+  isLoading,
+  isRefreshing,
+  onRefresh,
+  onUpdate,
+  onDelete,
+  isMutating,
+}) {
   const [editingRuleId, setEditingRuleId] = useState(null);
   const [editReferrer, setEditReferrer] = useState("");
   const [editRedirectUrl, setEditRedirectUrl] = useState("");
@@ -26,8 +34,8 @@ export function RedirectRulesList({ rules, isLoading, onRefresh, onUpdate, onDel
     <section className="card">
       <div className="rules-header">
         <h2>Правила</h2>
-        <button type="button" onClick={onRefresh} className="button-secondary">
-          Обновить
+        <button type="button" onClick={onRefresh} className="button-secondary" disabled={isRefreshing}>
+          {isRefreshing ? "Обновляем..." : "Обновить"}
         </button>
       </div>
 
@@ -60,12 +68,13 @@ export function RedirectRulesList({ rules, isLoading, onRefresh, onUpdate, onDel
                     onClick={() => void handleSaveEdit(rule.id)}
                     disabled={isMutating}
                   >
-                    Сохранить
+                    {isMutating ? "Сохраняем..." : "Сохранить"}
                   </button>
                   <button
                     type="button"
                     className="button-secondary"
                     onClick={() => setEditingRuleId(null)}
+                    disabled={isMutating}
                   >
                     Отмена
                   </button>
@@ -80,8 +89,8 @@ export function RedirectRulesList({ rules, isLoading, onRefresh, onUpdate, onDel
                   <strong>Redirect:</strong> {rule.redirectUrl}
                 </p>
                 <div className="actions">
-                  <button type="button" onClick={() => beginEdit(rule)}>
-                    Редактировать
+                  <button type="button" onClick={() => beginEdit(rule)} disabled={isMutating}>
+                    {isMutating ? "Подождите..." : "Редактировать"}
                   </button>
                   <button
                     type="button"
@@ -89,7 +98,7 @@ export function RedirectRulesList({ rules, isLoading, onRefresh, onUpdate, onDel
                     onClick={() => onDelete(rule.id)}
                     disabled={isMutating}
                   >
-                    Удалить
+                    {isMutating ? "Удаляем..." : "Удалить"}
                   </button>
                 </div>
               </>

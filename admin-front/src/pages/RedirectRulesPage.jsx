@@ -17,6 +17,7 @@ export function RedirectRulesPage() {
   const {
     data: rules = [],
     isLoading: isRulesLoading,
+    isFetching: isRulesFetching,
     refetch,
     error: rulesError,
   } = useGetRedirectRulesQuery(undefined, {
@@ -57,6 +58,9 @@ export function RedirectRulesPage() {
           <Link to="/ad-accounts" className="button button-link button-secondary">
             Рекламные аккаунты
           </Link>
+          <Link to="/telegram-trackers" className="button button-link button-secondary">
+            Telegram трекеры
+          </Link>
 
           <button
             type="button"
@@ -64,7 +68,7 @@ export function RedirectRulesPage() {
             className="button-secondary"
             disabled={isLogoutLoading}
           >
-            Выйти
+            {isLogoutLoading ? "Выходим..." : "Выйти"}
           </button>
         </div>
       </section>
@@ -78,6 +82,7 @@ export function RedirectRulesPage() {
       <RedirectRulesList
         rules={rules}
         isLoading={isRulesLoading}
+        isRefreshing={isRulesFetching}
         onRefresh={() => void refetch()}
         onUpdate={(payload) => updateRule(payload).unwrap()}
         onDelete={(id) => deleteRule(id).unwrap()}

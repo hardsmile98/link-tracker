@@ -16,6 +16,7 @@ export function AdAccountsPage() {
   const {
     data: accounts = [],
     isLoading: isAccountsLoading,
+    isFetching: isAccountsFetching,
     refetch,
     error: accountsError,
   } = useGetAdAccountsQuery(undefined, {
@@ -53,13 +54,16 @@ export function AdAccountsPage() {
           <Link to="/" className="button button-link button-secondary">
             Редиректы
           </Link>
+          <Link to="/telegram-trackers" className="button button-link button-secondary">
+            Telegram трекеры
+          </Link>
           <button
             type="button"
             onClick={() => void handleLogout()}
             className="button-secondary"
             disabled={isLogoutLoading}
           >
-            Выйти
+            {isLogoutLoading ? "Выходим..." : "Выйти"}
           </button>
         </div>
       </section>
@@ -72,6 +76,7 @@ export function AdAccountsPage() {
       <AdAccountsList
         accounts={accounts}
         isLoading={isAccountsLoading}
+        isRefreshing={isAccountsFetching}
         onRefresh={() => void refetch()}
         onDelete={(id) => deleteAdAccount(id).unwrap()}
         isMutating={isCreating || isDeleting}

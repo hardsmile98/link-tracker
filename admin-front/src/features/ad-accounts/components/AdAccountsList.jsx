@@ -1,10 +1,10 @@
-export function AdAccountsList({ accounts, isLoading, onRefresh, onDelete, isMutating }) {
+export function AdAccountsList({ accounts, isLoading, isRefreshing, onRefresh, onDelete, isMutating }) {
   return (
     <section className="card">
       <div className="rules-header">
         <h2>Рекламные аккаунты</h2>
-        <button type="button" onClick={onRefresh} className="button-secondary">
-          Обновить
+        <button type="button" onClick={onRefresh} className="button-secondary" disabled={isRefreshing}>
+          {isRefreshing ? "Обновляем..." : "Обновить"}
         </button>
       </div>
 
@@ -33,7 +33,7 @@ export function AdAccountsList({ accounts, isLoading, onRefresh, onDelete, isMut
                 onClick={() => onDelete(account.id)}
                 disabled={isMutating}
               >
-                Удалить
+                {isMutating ? "Удаляем..." : "Удалить"}
               </button>
             </div>
           </article>
