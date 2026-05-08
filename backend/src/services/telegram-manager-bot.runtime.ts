@@ -338,7 +338,7 @@ class TelegramManagerBotRuntime {
       await keitaroService.sendLeadPostback(conversion.subid, "deposit", amountUsd);
     }
 
-    if (conversion.ttpixelid) {
+    if (conversion.ttpixelid && conversion.ttclid) {
       await tikTokEventsService.sendPurchaseEvent({
         telegramUserId: conversion.telegramUserId,
         pixelId: conversion.ttpixelid,
