@@ -63,7 +63,7 @@ class TelegramConversionService {
       await keitaroService.sendLeadPostback(subid, 'lead');
     }
 
-    if (ttpixelid) {
+    if (ttpixelid && ttclid) {
       logger.info({ accountId, senderId, ttpixelid }, 'Sending contact event');
 
       await tikTokEventsService.sendContactEvent({
