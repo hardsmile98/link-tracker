@@ -23,6 +23,7 @@ const envSchema = z.object({
   TELEGRAM_MANAGER_PASSWORD: z.string().min(1),
   TELEGRAM_MANAGER_WEBHOOK_PATH: z.string().min(1).default("/webhooks/telegram-manager"),
   TELEGRAM_MANAGER_WEBHOOK_URL: optionalNonEmptyString,
+  TELEGRAM_MANAGER_BOT_TOKEN: z.string().min(1),
   TELEGRAM_API_ID: z.coerce.number().int().positive(),
   TELEGRAM_API_HASH: z.string().min(1),
   TELEGRAM_MTPROXY_HOST: optionalNonEmptyString,

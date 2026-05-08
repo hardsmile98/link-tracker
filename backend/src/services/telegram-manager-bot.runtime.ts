@@ -33,7 +33,7 @@ const SEND_ANOTHER_BUTTON = "Отправить еще клиента";
 
 class TelegramManagerBotRuntime {
   public readonly webhookPath = env.TELEGRAM_MANAGER_WEBHOOK_PATH;
-  private readonly bot = new Bot(env.TELEGRAM_BOT_TOKEN);
+  private readonly bot = new Bot(env.TELEGRAM_MANAGER_BOT_TOKEN);
   private readonly sessions = new Map<number, ManagerSession>();
 
   constructor() {
