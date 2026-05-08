@@ -8,6 +8,7 @@ import { adminAuthRouter } from "./routes/admin-auth.routes";
 import { attributionRouter } from "./routes/attribution.routes";
 import { clickRouter } from "./routes/click.routes";
 import { redirectRuleRouter } from "./routes/redirect-rule.routes";
+import { telegramManagerBotRuntime } from "./services/telegram-manager-bot.runtime";
 import { telegramTrackerRouter } from "./routes/telegram-tracker.routes";
 
 export const app = express();
@@ -24,6 +25,10 @@ app.use(
 );
 app.use(express.json({ limit: "1mb" }));
 app.use(requestLogger);
+app.post(
+  telegramManagerBotRuntime.webhookPath,
+  telegramManagerBotRuntime.getWebhookCallback()
+);
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true });

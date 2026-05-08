@@ -2,10 +2,12 @@ import { app } from "./app";
 import { env } from "./config/env";
 import { logger } from "./config/logger";
 import { closeDbPool, prisma } from "./config/prisma";
+import { telegramManagerBotRuntime } from "./services/telegram-manager-bot.runtime";
 import { telegramTrackerRuntime } from "./services/telegram-tracker.runtime";
 
 async function bootstrap() {
   await telegramTrackerRuntime.startAllActive();
+  await telegramManagerBotRuntime.start();
 
   const server = app.listen(env.PORT, () => {
     logger.info({ port: env.PORT, env: env.NODE_ENV }, "Tracking backend started");
@@ -15,6 +17,7 @@ async function bootstrap() {
     logger.info({ signal }, "Graceful shutdown started");
 
     server.close(async () => {
+      await telegramManagerBotRuntime.stop();
       await telegramTrackerRuntime.stopAll();
       await prisma.$disconnect();
 

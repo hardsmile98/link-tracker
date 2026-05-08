@@ -2,7 +2,7 @@ import { env } from '../config/env';
 import { logger } from '../config/logger';
 
 class KeitaroService {
-  public async sendLeadPostback(subid: string, status: 'lead' | 'deposit') {
+  public async sendLeadPostback(subid: string, status: 'lead' | 'deposit', value?: number) {
     const postbackBaseUrl = env.KEITARO_POSTBACK_URL ?? null;
 
     if (!postbackBaseUrl) {
@@ -13,6 +13,10 @@ class KeitaroService {
       const postbackUrl = new URL(postbackBaseUrl);
       postbackUrl.searchParams.set('subid', subid);
       postbackUrl.searchParams.set('status', status);
+
+      if (value) {
+        postbackUrl.searchParams.set('payout', value.toString());
+      }
 
       const response = await fetch(postbackUrl.toString(), {
         method: 'GET',
