@@ -6,6 +6,8 @@ class KeitaroService {
     const postbackBaseUrl = env.KEITARO_POSTBACK_URL ?? null;
 
     if (!postbackBaseUrl) {
+      logger.warn({ subid, status, value }, 'Keitaro postback URL not found');
+
       return;
     }
 
