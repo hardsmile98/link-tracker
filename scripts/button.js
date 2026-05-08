@@ -6,6 +6,16 @@
     return `${referrerUrl.origin}${referrerUrl.pathname}`;
   }
 
+  const getCookie = (name) => {
+    const value = `; ${document.cookie}`;
+
+    const parts = value.split(`; ${name}=`);
+
+    if (parts.length === 2) return parts.pop().split(';').shift();
+
+    return null;
+  };
+
   function getScriptConfig() {
     const script = document.getElementById(SCRIPT_ID) || document.currentScript;
     if (!script) {
@@ -35,11 +45,17 @@
     }
 
     if (config.scriptTargetTtp) {
-      trackingUrl.searchParams.set("ttp", config.scriptTargetTtp);
+      trackingUrl.searchParams.set("ttpixelid", config.scriptTargetTtp);
+
+      const _ttp = getCookie("_ttp");
+
+      if (_ttp) {
+        trackingUrl.searchParams.set("_ttp", _ttp);
+      }
     }
 
     if (config.scriptTargetFbp) {
-      trackingUrl.searchParams.set("fbp", config.scriptTargetFbp);
+      trackingUrl.searchParams.set("fbpixelid", config.scriptTargetFbp);
     }
 
     trackingUrl.searchParams.set("referrer", getReferrer());

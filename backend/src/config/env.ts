@@ -27,6 +27,7 @@ const envSchema = z.object({
   TELEGRAM_MTPROXY_SECRET: optionalNonEmptyString,
   ADMIN_LOGIN: z.string().min(1),
   ADMIN_PASSWORD: z.string().min(1),
+  KEITARO_POSTBACK_URL: optionalNonEmptyString,
   CORS_ORIGIN: z.string().default("*"),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info")
 });
