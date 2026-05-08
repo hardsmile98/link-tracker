@@ -17,7 +17,6 @@ async function bootstrap() {
     logger.info({ signal }, "Graceful shutdown started");
 
     server.close(async () => {
-      await telegramManagerBotRuntime.stop();
       await telegramTrackerRuntime.stopAll();
       await prisma.$disconnect();
 
