@@ -18,6 +18,7 @@
 
   function getScriptConfig() {
     const script = document.getElementById(SCRIPT_ID) || document.currentScript;
+
     if (!script) {
       console.error("Tracking script not found");
       throw new Error("Tracking script not found");
@@ -28,6 +29,7 @@
       scriptTargetUrl: script.dataset.targetUrl,
       scriptTargetTtp: script.dataset.targetTtp,
       scriptTargetFbp: script.dataset.targetFbp,
+      scriptTargetClass: script.dataset.targetClass,
     };
   }
 
@@ -63,16 +65,33 @@
     return trackingUrl.toString();
   }
 
-  function patchLinks() {
-    const config = getScriptConfig();
+  function getElementsToPatch(config) {
+    const className = config.scriptTargetClass?.trim();
+
+    if (className) {
+      const selector = className
+        .split(/\s+/)
+        .map((c) => `.${CSS.escape(c)}`)
+        .join("");
+
+      return document.querySelectorAll(selector);
+    }
 
     const links = document.querySelectorAll("a[href]");
 
     const buttons = document.querySelectorAll('button[type="button"]');
 
+    return [...links, ...buttons];
+  }
+
+  function patchLinks() {
+    const config = getScriptConfig();
+
+    const elements = getElementsToPatch(config);
+
     const trackingUrl = buildTrackingUrl(config);
 
-    [...links, ...buttons].forEach((element) => {
+    elements.forEach((element) => {
       const isLink = element.matches("a[href]");
 
       if (isLink) {
