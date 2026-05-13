@@ -69,7 +69,7 @@ export function TelegramTrackerChatThreadPage() {
     error: messagesError,
   } = useGetTelegramTrackerChatMessagesQuery(
     { trackerId, peerType, peerId },
-    { skip: !authenticated || !peerOk }
+    { skip: !authenticated || !peerOk, pollingInterval: 30_000 }
   );
 
   const [

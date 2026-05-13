@@ -49,7 +49,7 @@ export function TelegramTrackerChatsPage() {
     error: chatsError,
   } = useGetTelegramTrackerChatsQuery(
     { trackerId, q: debouncedQ || undefined },
-    { skip: !authenticated || !trackerId }
+    { skip: !authenticated || !trackerId, pollingInterval: 30_000 }
   );
 
   const [logout, { isLoading: isLogoutLoading, error: logoutError }] = useLogoutMutation();
