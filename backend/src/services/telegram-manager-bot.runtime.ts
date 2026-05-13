@@ -146,6 +146,13 @@ class TelegramManagerBotRuntime {
       }
 
       if (session.step === "awaiting_forward") {
+        if (this.isHiddenForwardOrigin(ctx.message)) {
+          await ctx.reply(
+            "Пересылка скрыта: Telegram не передаёт ID покупателя. Попросите переслать сообщение с открытым профилем (Настройки Telegram → Конфиденциальность → Пересланные сообщения → «Все» или добавьте бота в исключения)."
+          );
+          return;
+        }
+
         const forwardedUserId = this.extractForwardedTelegramUserId(ctx);
 
         if (!forwardedUserId) {
@@ -252,14 +259,26 @@ class TelegramManagerBotRuntime {
       .resized();
   }
 
+  /** Forward from a user who hid their name — no `sender_user.id` in the update. */
+  private isHiddenForwardOrigin(message: Context["message"]): boolean {
+    if (!message || !("forward_origin" in message)) {
+      return false;
+    }
+
+    const origin = message.forward_origin;
+
+    return (
+      typeof origin === "object" &&
+      origin !== null &&
+      "type" in origin &&
+      origin.type === "hidden_user"
+    );
+  }
+
   private extractForwardedTelegramUserId(ctx: Context): bigint | null {
     const message = ctx.message;
 
-    logger.info({ ctx }, 'Extracting forwarded Telegram user ID');
-
     if (!message) {
-      logger.warn({ message }, 'No message found');
-  
       return null;
     }
 
