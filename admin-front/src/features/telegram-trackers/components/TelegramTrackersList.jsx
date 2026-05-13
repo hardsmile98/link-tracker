@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export function TelegramTrackersList({
   trackers,
   isLoading,
@@ -32,6 +34,12 @@ export function TelegramTrackersList({
               <strong>Подключение:</strong> {tracker.isRunning ? "Online" : "Offline"}
             </p>
             <div className="actions">
+              <Link
+                to={`/telegram-trackers/${tracker.id}/chats`}
+                className="button button-link button-secondary"
+              >
+                Перейти в чаты
+              </Link>
               <button
                 type="button"
                 className="button-secondary"

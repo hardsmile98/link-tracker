@@ -51,6 +51,47 @@ function mapTracker(tracker: {
   };
 }
 
+function mapIncomingMessage(item: {
+  id: string;
+  trackedAccountId: string;
+  fromTelegramUserId: bigint;
+  chatTelegramId: bigint | null;
+  telegramMessageId: number | null;
+  messageText: string | null;
+  fromFirstName: string | null;
+  fromLastName: string | null;
+  receivedAt: Date;
+  createdAt: Date;
+}) {
+  return {
+    id: item.id,
+    tracked_account_id: item.trackedAccountId,
+    from_telegram_user_id: item.fromTelegramUserId.toString(),
+    chat_telegram_id: item.chatTelegramId?.toString() ?? null,
+    telegram_message_id: item.telegramMessageId,
+    message_text: item.messageText,
+    from_first_name: item.fromFirstName,
+    from_last_name: item.fromLastName,
+    received_at: item.receivedAt,
+    created_at: item.createdAt
+  };
+}
+
+const listChatsQuerySchema = z.object({
+  q: z.preprocess(
+    (value) => (Array.isArray(value) ? value[0] : value),
+    z.string().optional()
+  )
+});
+
+const peerMessagesParamsSchema = z.object({
+  id: z.uuid(),
+  peerType: z.enum(["chat", "user"]),
+  peerId: z
+    .string()
+    .regex(/^-?\d+$/, "peer id must be a decimal integer string")
+});
+
 export async function listTelegramTrackers(_req: Request, res: Response) {
   const trackers = await telegramTrackerService.listTrackers();
 
@@ -170,15 +211,32 @@ export async function listTelegramIncomingMessages(req: Request, res: Response) 
 
   res.json({
     success: true,
-    data: incomingMessages.map((item) => ({
-      id: item.id,
-      tracked_account_id: item.trackedAccountId,
-      from_telegram_user_id: item.fromTelegramUserId.toString(),
-      chat_telegram_id: item.chatTelegramId?.toString() ?? null,
-      telegram_message_id: item.telegramMessageId,
-      message_text: item.messageText,
-      received_at: item.receivedAt,
-      created_at: item.createdAt
+    data: incomingMessages.map(mapIncomingMessage)
+  });
+}
+
+export async function listTelegramIncomingChats(req: Request, res: Response) {
+  const { id } = idParamsSchema.parse(req.params);
+  const { q } = listChatsQuerySchema.parse(req.query);
+  const chats = await telegramTrackerService.listIncomingChats(id, q);
+
+  res.json({
+    success: true,
+    data: chats.map(({ peerType, peerId, lastMessage }) => ({
+      peer_type: peerType,
+      peer_id: peerId.toString(),
+      last_message: mapIncomingMessage(lastMessage)
     }))
+  });
+}
+
+export async function listTelegramIncomingMessagesForPeer(req: Request, res: Response) {
+  const { id, peerType, peerId } = peerMessagesParamsSchema.parse(req.params);
+  const peerIdBigInt = BigInt(peerId);
+  const messages = await telegramTrackerService.listIncomingMessagesForPeer(id, peerType, peerIdBigInt);
+
+  res.json({
+    success: true,
+    data: messages.map(mapIncomingMessage)
   });
 }

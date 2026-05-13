@@ -209,6 +209,22 @@ class TelegramTrackerRuntime {
           ? message.message
           : null;
 
+      let fromFirstName: string | null = null;
+      let fromLastName: string | null = null;
+
+      try {
+        const senderEntity = await message.getSender();
+
+        if (senderEntity instanceof Api.User) {
+          const fn = senderEntity.firstName?.trim();
+          const ln = senderEntity.lastName?.trim();
+          fromFirstName = fn && fn.length > 0 ? fn : null;
+          fromLastName = ln && ln.length > 0 ? ln : null;
+        }
+      } catch {
+        logger.warn({ accountId, senderId }, 'Failed to get sender entity');
+      }
+
       await telegramConversionService.processFirstMessage(accountId, senderId);
 
       await prisma.incomingMessage.create({
@@ -218,6 +234,8 @@ class TelegramTrackerRuntime {
           chatTelegramId: chatId,
           telegramMessageId: message.id,
           messageText: text,
+          fromFirstName,
+          fromLastName,
           receivedAt,
         },
       });

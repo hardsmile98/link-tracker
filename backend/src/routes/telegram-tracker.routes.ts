@@ -2,7 +2,9 @@ import { Router } from "express";
 import { requireAdminAuth } from "../middleware/require-admin-auth";
 import {
   deleteTelegramTracker,
+  listTelegramIncomingChats,
   listTelegramIncomingMessages,
+  listTelegramIncomingMessagesForPeer,
   listTelegramTrackers,
   restartTelegramTracker,
   startTelegramTrackerAuth,
@@ -22,4 +24,9 @@ telegramTrackerRouter.post("/api/admin/telegram-trackers/auth/password", verifyT
 telegramTrackerRouter.patch("/api/admin/telegram-trackers/:id", updateTelegramTracker);
 telegramTrackerRouter.post("/api/admin/telegram-trackers/:id/restart", restartTelegramTracker);
 telegramTrackerRouter.delete("/api/admin/telegram-trackers/:id", deleteTelegramTracker);
+telegramTrackerRouter.get(
+  "/api/admin/telegram-trackers/:id/chats/:peerType/:peerId/messages",
+  listTelegramIncomingMessagesForPeer
+);
+telegramTrackerRouter.get("/api/admin/telegram-trackers/:id/chats", listTelegramIncomingChats);
 telegramTrackerRouter.get("/api/admin/telegram-trackers/:id/messages", listTelegramIncomingMessages);

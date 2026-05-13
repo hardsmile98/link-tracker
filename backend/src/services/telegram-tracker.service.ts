@@ -178,6 +178,185 @@ export class TelegramTrackerService {
     });
   }
 
+  private escapeIlikeContains(term: string): string {
+    return term.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
+  }
+
+  private mapIncomingChatAggregateRows(
+    rows: Array<{
+      id: string;
+      trackedAccountId: string;
+      fromTelegramUserId: bigint;
+      chatTelegramId: bigint | null;
+      telegramMessageId: number | null;
+      messageText: string | null;
+      fromFirstName: string | null;
+      fromLastName: string | null;
+      receivedAt: Date;
+      createdAt: Date;
+      peerType: string;
+      peerId: bigint;
+    }>
+  ) {
+    return rows.map((row) => ({
+      peerType: row.peerType === "chat" ? ("chat" as const) : ("user" as const),
+      peerId: row.peerId,
+      lastMessage: {
+        id: row.id,
+        trackedAccountId: row.trackedAccountId,
+        fromTelegramUserId: row.fromTelegramUserId,
+        chatTelegramId: row.chatTelegramId,
+        telegramMessageId: row.telegramMessageId,
+        messageText: row.messageText,
+        fromFirstName: row.fromFirstName,
+        fromLastName: row.fromLastName,
+        receivedAt: row.receivedAt,
+        createdAt: row.createdAt
+      }
+    }));
+  }
+
+  public async listIncomingChats(trackerId: string, search?: string) {
+    const tracker = await prisma.telegramTrackedAccount.findUnique({
+      where: { id: trackerId },
+      select: { id: true }
+    });
+
+    if (!tracker) {
+      throw new AppError("Telegram tracker not found", 404);
+    }
+
+    const term = search?.trim() ?? "";
+    const hasSearch = term.length > 0;
+    const ilikePattern = hasSearch ? `%${this.escapeIlikeContains(term)}%` : "";
+
+    type IncomingChatSqlRow = {
+      id: string;
+      trackedAccountId: string;
+      fromTelegramUserId: bigint;
+      chatTelegramId: bigint | null;
+      telegramMessageId: number | null;
+      messageText: string | null;
+      fromFirstName: string | null;
+      fromLastName: string | null;
+      receivedAt: Date;
+      createdAt: Date;
+      peerType: string;
+      peerId: bigint;
+    };
+
+    const rows = await prisma.$queryRaw<IncomingChatSqlRow[]>`
+      WITH params AS (
+        SELECT
+          CAST(${trackerId} AS uuid) AS tid,
+          ${hasSearch}::boolean AS has_search,
+          ${ilikePattern}::text AS ilike_pattern
+      ),
+      matching_peers AS (
+        SELECT DISTINCT pk
+        FROM (
+          SELECT
+            CASE
+              WHEN m.chat_telegram_id IS NOT NULL THEN CONCAT('chat:', m.chat_telegram_id::text)
+              ELSE CONCAT('user:', m.from_telegram_user_id::text)
+            END AS pk
+          FROM incoming_messages m
+          CROSS JOIN params p
+          WHERE m.tracked_account_id = p.tid
+            AND (
+              NOT p.has_search
+              OR (
+                m.message_text IS NOT NULL
+                AND m.message_text ILIKE p.ilike_pattern ESCAPE '\\'
+              )
+            )
+        ) t
+      ),
+      ranked AS (
+        SELECT
+          m.id,
+          m.tracked_account_id AS "trackedAccountId",
+          m.from_telegram_user_id AS "fromTelegramUserId",
+          m.chat_telegram_id AS "chatTelegramId",
+          m.telegram_message_id AS "telegramMessageId",
+          m.message_text AS "messageText",
+          m.from_first_name AS "fromFirstName",
+          m.from_last_name AS "fromLastName",
+          m.received_at AS "receivedAt",
+          m.created_at AS "createdAt",
+          CASE WHEN m.chat_telegram_id IS NOT NULL THEN 'chat' ELSE 'user' END AS "peerType",
+          CASE
+            WHEN m.chat_telegram_id IS NOT NULL THEN m.chat_telegram_id
+            ELSE m.from_telegram_user_id
+          END AS "peerId",
+          ROW_NUMBER() OVER (
+            PARTITION BY (
+              CASE
+                WHEN m.chat_telegram_id IS NOT NULL THEN CONCAT('chat:', m.chat_telegram_id::text)
+                ELSE CONCAT('user:', m.from_telegram_user_id::text)
+              END
+            )
+            ORDER BY m.received_at DESC
+          ) AS rn
+        FROM incoming_messages m
+        INNER JOIN matching_peers mp ON mp.pk =
+          CASE
+            WHEN m.chat_telegram_id IS NOT NULL THEN CONCAT('chat:', m.chat_telegram_id::text)
+            ELSE CONCAT('user:', m.from_telegram_user_id::text)
+          END
+        CROSS JOIN params p
+        WHERE m.tracked_account_id = p.tid
+      )
+      SELECT
+        id,
+        "trackedAccountId",
+        "fromTelegramUserId",
+        "chatTelegramId",
+        "telegramMessageId",
+        "messageText",
+        "fromFirstName",
+        "fromLastName",
+        "receivedAt",
+        "createdAt",
+        "peerType",
+        "peerId"
+      FROM ranked
+      WHERE rn = 1
+      ORDER BY "receivedAt" DESC
+    `;
+
+    return this.mapIncomingChatAggregateRows(rows);
+  }
+
+  public async listIncomingMessagesForPeer(
+    trackerId: string,
+    peerType: "chat" | "user",
+    peerId: bigint
+  ) {
+    const tracker = await prisma.telegramTrackedAccount.findUnique({
+      where: { id: trackerId },
+      select: { id: true }
+    });
+
+    if (!tracker) {
+      throw new AppError("Telegram tracker not found", 404);
+    }
+
+    const where =
+      peerType === "chat"
+        ? { trackedAccountId: trackerId, chatTelegramId: peerId }
+        : {
+            trackedAccountId: trackerId,
+            chatTelegramId: null,
+            fromTelegramUserId: peerId
+          };
+
+    return prisma.incomingMessage.findMany({
+      where,
+      orderBy: [{ receivedAt: "asc" }]
+    });
+  }
+
   public async startTrackerAuth(input: StartTrackerAuthInput) {
     const client = new TelegramClient(new StringSession(""), env.TELEGRAM_API_ID, env.TELEGRAM_API_HASH, getTelegramClientParams());
 

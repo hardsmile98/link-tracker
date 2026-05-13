@@ -46,20 +46,39 @@ export const telegramTrackersApi = baseApi.injectEndpoints({
         url: `/api/admin/telegram-trackers/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["TelegramTrackers", "TelegramMessages"],
+      invalidatesTags: ["TelegramTrackers", "TelegramTrackerChats", "TelegramTrackerChatMessages"],
     }),
     restartTelegramTracker: builder.mutation({
       query: (id) => ({
         url: `/api/admin/telegram-trackers/${id}/restart`,
         method: "POST",
       }),
-      invalidatesTags: ["TelegramTrackers", "TelegramMessages"],
+      invalidatesTags: ["TelegramTrackers", "TelegramTrackerChats", "TelegramTrackerChatMessages"],
+    }),
+    getTelegramTrackerChats: builder.query({
+      query: ({ trackerId, q }) => ({
+        url: `/api/admin/telegram-trackers/${trackerId}/chats`,
+        params: q ? { q } : undefined,
+      }),
+      transformResponse: (response) => response.data ?? [],
+      providesTags: (_result, _error, arg) => [{ type: "TelegramTrackerChats", id: arg.trackerId }],
+    }),
+    getTelegramTrackerChatMessages: builder.query({
+      query: ({ trackerId, peerType, peerId }) => ({
+        url: `/api/admin/telegram-trackers/${trackerId}/chats/${peerType}/${peerId}/messages`,
+      }),
+      transformResponse: (response) => response.data ?? [],
+      providesTags: (_result, _error, arg) => [
+        { type: "TelegramTrackerChatMessages", id: `${arg.trackerId}-${arg.peerType}-${arg.peerId}` },
+      ],
     }),
   }),
 });
 
 export const {
   useGetTelegramTrackersQuery,
+  useGetTelegramTrackerChatsQuery,
+  useGetTelegramTrackerChatMessagesQuery,
   useStartTelegramTrackerAuthMutation,
   useVerifyTelegramTrackerCodeMutation,
   useVerifyTelegramTrackerPasswordMutation,

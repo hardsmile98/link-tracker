@@ -8,6 +8,7 @@ import "./index.css";
 import "./App.css";
 import "./features/auth/api/authApi";
 import "./features/redirect-rules/api/redirectRulesApi";
+import "./features/telegram-trackers/api/telegramTrackersApi";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

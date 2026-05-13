@@ -148,7 +148,7 @@ class TelegramManagerBotRuntime {
       if (session.step === "awaiting_forward") {
         if (this.isHiddenForwardOrigin(ctx.message)) {
           await ctx.reply(
-            "Пересылка скрыта: Telegram не передаёт ID покупателя. Попросите переслать сообщение с открытым профилем (Настройки Telegram → Конфиденциальность → Пересланные сообщения → «Все» или добавьте бота в исключения)."
+            "Пересылка скрыта: Telegram не передаёт ID покупателя."
           );
           return;
         }

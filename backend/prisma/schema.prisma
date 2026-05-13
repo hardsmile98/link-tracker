@@ -81,10 +81,14 @@ model IncomingMessage {
   chatTelegramId      BigInt?                @map("chat_telegram_id")
   telegramMessageId   Int?                   @map("telegram_message_id")
   messageText         String?                @map("message_text") @db.Text
+  fromFirstName       String?                @map("from_first_name") @db.Text
+  fromLastName        String?                @map("from_last_name") @db.Text
   receivedAt          DateTime               @map("received_at")
   createdAt           DateTime               @default(now()) @map("created_at")
   trackedAccount      TelegramTrackedAccount @relation(fields: [trackedAccountId], references: [id], onDelete: Cascade)
 
   @@index([trackedAccountId, receivedAt])
+  @@index([trackedAccountId, chatTelegramId, receivedAt])
+  @@index([trackedAccountId, fromTelegramUserId, receivedAt])
   @@map("incoming_messages")
 }
