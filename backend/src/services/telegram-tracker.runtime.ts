@@ -56,6 +56,8 @@ class TelegramTrackerRuntime {
   }
 
   public async startAllActive() {
+    await this.normalizeLegacyAccountIds();
+
     const accounts = await prisma.telegramTrackedAccount.findMany({
       where: { isActive: true },
       select: {
@@ -67,6 +69,97 @@ class TelegramTrackerRuntime {
     });
 
     await Promise.all(accounts.map((account) => this.startTracking(account)));
+  }
+
+  private isStableAccountId(accountId: string) {
+    return /^\d+$/.test(accountId);
+  }
+
+  private async normalizeLegacyAccountIds() {
+    const accounts = await prisma.telegramTrackedAccount.findMany({
+      select: {
+        id: true,
+        label: true,
+        apiId: true,
+        apiHash: true,
+        sessionString: true,
+        isActive: true,
+      },
+    });
+
+    for (const account of accounts) {
+      if (this.isStableAccountId(account.id)) {
+        continue;
+      }
+
+      const client = new TelegramClient(
+        new StringSession(account.sessionString),
+        account.apiId,
+        account.apiHash,
+        getTelegramClientParams(),
+      );
+
+      try {
+        await client.connect();
+        const me = await client.getMe();
+
+        if (!(me instanceof Api.User)) {
+          logger.warn(
+            { accountId: account.id },
+            'Failed to normalize Telegram tracker id: authorized entity is not a user',
+          );
+          continue;
+        }
+
+        const stableId = me.id.toString();
+
+        await prisma.$transaction(async (tx) => {
+          await tx.incomingMessage.updateMany({
+            where: { trackedAccountId: account.id },
+            data: { trackedAccountId: stableId },
+          });
+
+          const existingStableAccount = await tx.telegramTrackedAccount.findUnique({
+            where: { id: stableId },
+            select: { id: true },
+          });
+
+          if (existingStableAccount) {
+            await tx.telegramTrackedAccount.update({
+              where: { id: stableId },
+              data: {
+                label: account.label,
+                apiId: account.apiId,
+                apiHash: account.apiHash,
+                sessionString: account.sessionString,
+                isActive: account.isActive,
+              },
+            });
+            await tx.telegramTrackedAccount.delete({
+              where: { id: account.id },
+            });
+            return;
+          }
+
+          await tx.telegramTrackedAccount.update({
+            where: { id: account.id },
+            data: { id: stableId },
+          });
+        });
+
+        logger.info(
+          { oldAccountId: account.id, accountId: stableId },
+          'Normalized Telegram tracker id',
+        );
+      } catch (error) {
+        logger.warn(
+          { err: error, accountId: account.id },
+          'Failed to normalize Telegram tracker id',
+        );
+      } finally {
+        await this.closeClient(client);
+      }
+    }
   }
 
   public isRunning(accountId: string) {

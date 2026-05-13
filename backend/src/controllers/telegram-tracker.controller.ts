@@ -31,7 +31,7 @@ const updateTrackerSchema = z
   );
 
 const idParamsSchema = z.object({
-  id: z.uuid()
+  id: z.string().trim().min(1)
 });
 
 function mapTracker(tracker: {
@@ -86,7 +86,7 @@ const listChatsQuerySchema = z.object({
 });
 
 const peerMessagesParamsSchema = z.object({
-  id: z.uuid(),
+  id: z.string().trim().min(1),
   peerType: z.enum(["chat", "user"]),
   peerId: z
     .string()

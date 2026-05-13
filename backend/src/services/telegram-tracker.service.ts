@@ -37,6 +37,15 @@ type VerifyTrackerPasswordInput = {
   password: string;
 };
 
+type AuthorizedTrackerData = {
+  id: string;
+  label: string;
+  apiId: number;
+  apiHash: string;
+  sessionString: string;
+  isActive: boolean;
+};
+
 type TrackerAuthSession = {
   id: string;
   client: TelegramClient;
@@ -74,18 +83,46 @@ export class TelegramTrackerService {
   }
 
   public async createTracker(input: CreateTrackerInput) {
-    const tracker = await prisma.telegramTrackedAccount.create({
-      data: input
+    const client = new TelegramClient(
+      new StringSession(input.sessionString),
+      input.apiId,
+      input.apiHash,
+      getTelegramClientParams()
+    );
+
+    try {
+      await client.connect();
+      const id = await this.getAuthorizedTelegramAccountId(client);
+      const tracker = await this.upsertAuthorizedTracker({
+        id,
+        ...input
+      });
+
+      return {
+        ...tracker,
+        isRunning: telegramTrackerRuntime.isRunning(tracker.id)
+      };
+    } finally {
+      await this.closeAuthClient(client);
+    }
+  }
+
+  private async upsertAuthorizedTracker(data: AuthorizedTrackerData) {
+    const tracker = await prisma.telegramTrackedAccount.upsert({
+      where: { id: data.id },
+      create: data,
+      update: {
+        label: data.label,
+        apiId: data.apiId,
+        apiHash: data.apiHash,
+        sessionString: data.sessionString,
+        isActive: data.isActive
+      }
     });
 
-    if (tracker.isActive) {
-      await telegramTrackerRuntime.restartTracking(tracker.id);
-    }
+    await telegramTrackerRuntime.restartTracking(tracker.id);
 
-    return {
-      ...tracker,
-      isRunning: telegramTrackerRuntime.isRunning(tracker.id)
-    };
+    return tracker;
   }
 
   public async updateTracker(input: UpdateTrackerInput) {
@@ -254,7 +291,7 @@ export class TelegramTrackerService {
     const rows = await prisma.$queryRaw<IncomingChatSqlRow[]>`
       WITH params AS (
         SELECT
-          CAST(${trackerId} AS uuid) AS tid,
+          ${trackerId}::text AS tid,
           ${hasSearch}::boolean AS has_search,
           ${ilikePattern}::text AS ilike_pattern
       ),
@@ -466,28 +503,35 @@ export class TelegramTrackerService {
       throw new AppError("Failed to create Telegram session string", 500);
     }
 
+    const id = await this.getAuthorizedTelegramAccountId(authSession.client);
+
     this.authSessions.delete(authSession.id);
 
     await this.closeAuthClient(authSession.client);
 
-    const tracker = await prisma.telegramTrackedAccount.create({
-      data: {
-        label: authSession.label,
-        apiId: authSession.apiId,
-        apiHash: authSession.apiHash,
-        sessionString,
-        isActive: authSession.isActive
-      }
+    const tracker = await this.upsertAuthorizedTracker({
+      id,
+      label: authSession.label,
+      apiId: authSession.apiId,
+      apiHash: authSession.apiHash,
+      sessionString,
+      isActive: authSession.isActive
     });
-
-    if (tracker.isActive) {
-      await telegramTrackerRuntime.restartTracking(tracker.id);
-    }
 
     return {
       ...tracker,
       isRunning: telegramTrackerRuntime.isRunning(tracker.id)
     };
+  }
+
+  private async getAuthorizedTelegramAccountId(client: TelegramClient) {
+    const me = await client.getMe();
+
+    if (!(me instanceof Api.User)) {
+      throw new AppError("Failed to resolve Telegram account id", 500);
+    }
+
+    return me.id.toString();
   }
 
   private isPasswordRequiredError(error: unknown) {

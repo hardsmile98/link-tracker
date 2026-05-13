@@ -77,32 +77,30 @@ model AdAccount {
 }
 
 model TelegramTrackedAccount {
-  id              String                 @id @default(uuid()) @db.Uuid
-  label           String                 @db.Text
-  apiId           Int                    @map("api_id")
-  apiHash         String                 @map("api_hash") @db.Text
-  sessionString   String                 @map("session_string") @db.Text
-  isActive        Boolean                @default(true) @map("is_active")
-  createdAt       DateTime               @default(now()) @map("created_at")
-  updatedAt       DateTime               @updatedAt @map("updated_at")
-  incomingMessages IncomingMessage[]
+  id            String   @id @db.Text
+  label         String   @db.Text
+  apiId         Int      @map("api_id")
+  apiHash       String   @map("api_hash") @db.Text
+  sessionString String   @map("session_string") @db.Text
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   @@index([isActive, createdAt])
   @@map("telegram_tracked_accounts")
 }
 
 model IncomingMessage {
-  id                  String                 @id @default(uuid()) @db.Uuid
-  trackedAccountId    String                 @map("tracked_account_id") @db.Uuid
-  fromTelegramUserId  BigInt                 @map("from_telegram_user_id")
-  chatTelegramId      BigInt?                @map("chat_telegram_id")
-  telegramMessageId   Int?                   @map("telegram_message_id")
-  messageText         String?                @map("message_text") @db.Text
-  fromFirstName       String?                @map("from_first_name") @db.Text
-  fromLastName        String?                @map("from_last_name") @db.Text
-  receivedAt          DateTime               @map("received_at")
-  createdAt           DateTime               @default(now()) @map("created_at")
-  trackedAccount      TelegramTrackedAccount @relation(fields: [trackedAccountId], references: [id], onDelete: Cascade)
+  id                 String   @id @default(uuid()) @db.Uuid
+  trackedAccountId   String   @map("tracked_account_id") @db.Text
+  fromTelegramUserId BigInt   @map("from_telegram_user_id")
+  chatTelegramId     BigInt?  @map("chat_telegram_id")
+  telegramMessageId  Int?     @map("telegram_message_id")
+  messageText        String?  @map("message_text") @db.Text
+  fromFirstName      String?  @map("from_first_name") @db.Text
+  fromLastName       String?  @map("from_last_name") @db.Text
+  receivedAt         DateTime @map("received_at")
+  createdAt          DateTime @default(now()) @map("created_at")
 
   @@index([trackedAccountId, receivedAt])
   @@index([trackedAccountId, chatTelegramId, receivedAt])
