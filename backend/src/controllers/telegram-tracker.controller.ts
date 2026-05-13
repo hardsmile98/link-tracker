@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { z } from "zod";
 import { TelegramTrackerService } from "../services/telegram-tracker.service";
+import { trashConversionService } from "../services/trash-conversion.service";
 
 const telegramTrackerService = new TelegramTrackerService();
 
@@ -90,6 +91,12 @@ const peerMessagesParamsSchema = z.object({
   peerId: z
     .string()
     .regex(/^-?\d+$/, "peer id must be a decimal integer string")
+});
+
+const telegramUserParamsSchema = z.object({
+  telegramUserId: z
+    .string()
+    .regex(/^\d+$/, "telegram user id must be a positive decimal integer string")
 });
 
 export async function listTelegramTrackers(_req: Request, res: Response) {
@@ -222,9 +229,12 @@ export async function listTelegramIncomingChats(req: Request, res: Response) {
 
   res.json({
     success: true,
-    data: chats.map(({ peerType, peerId, lastMessage }) => ({
+    data: chats.map(({ peerType, peerId, isTrash, trashMarkedAt, lastMessage }) => ({
       peer_type: peerType,
       peer_id: peerId.toString(),
+      buyer_telegram_user_id: lastMessage.fromTelegramUserId.toString(),
+      is_trash: isTrash,
+      trash_marked_at: trashMarkedAt,
       last_message: mapIncomingMessage(lastMessage)
     }))
   });
@@ -238,5 +248,33 @@ export async function listTelegramIncomingMessagesForPeer(req: Request, res: Res
   res.json({
     success: true,
     data: messages.map(mapIncomingMessage)
+  });
+}
+
+export async function getTelegramUserTrashStatus(req: Request, res: Response) {
+  const { telegramUserId } = telegramUserParamsSchema.parse(req.params);
+  const status = await trashConversionService.getTrashStatus(BigInt(telegramUserId));
+
+  res.json({
+    success: true,
+    data: {
+      telegram_user_id: telegramUserId,
+      is_trash: status.isTrash,
+      trash_marked_at: status.trashMarkedAt
+    }
+  });
+}
+
+export async function markTelegramUserAsTrash(req: Request, res: Response) {
+  const { telegramUserId } = telegramUserParamsSchema.parse(req.params);
+  const status = await trashConversionService.sendAndMarkTrash(BigInt(telegramUserId));
+
+  res.json({
+    success: true,
+    data: {
+      telegram_user_id: telegramUserId,
+      is_trash: status.isTrash,
+      trash_marked_at: status.trashMarkedAt
+    }
   });
 }

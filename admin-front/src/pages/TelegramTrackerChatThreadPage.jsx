@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useGetMeQuery, useLogoutMutation } from "../features/auth/api/authApi";
 import {
   useCreateDepositConversionMutation,
@@ -8,6 +8,8 @@ import {
 import {
   useGetTelegramTrackerChatMessagesQuery,
   useGetTelegramTrackersQuery,
+  useGetTelegramUserTrashStatusQuery,
+  useMarkTelegramUserAsTrashMutation,
 } from "../features/telegram-trackers/api/telegramTrackersApi";
 
 const PEER_TYPES = new Set(["chat", "user"]);
@@ -34,6 +36,7 @@ function formatPersonName(firstName, lastName) {
 
 export function TelegramTrackerChatThreadPage() {
   const { trackerId, peerType, peerId } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [depositAmount, setDepositAmount] = useState("");
@@ -52,7 +55,22 @@ export function TelegramTrackerChatThreadPage() {
     Boolean(peerId) &&
     /^-?\d+$/.test(peerId);
 
-  const depositTelegramUserId = peerId
+  const {
+    data: messages = [],
+    isLoading,
+    error: messagesError,
+  } = useGetTelegramTrackerChatMessagesQuery(
+    { trackerId, peerType, peerId },
+    { skip: !authenticated || !peerOk, pollingInterval: 30_000 }
+  );
+
+  const lastMsg = messages.length ? messages[messages.length - 1] : null;
+  const buyerFromQuery = searchParams.get("buyer");
+  const queryTelegramUserId =
+    buyerFromQuery && /^\d+$/.test(buyerFromQuery) ? buyerFromQuery : null;
+  const depositTelegramUserId =
+    queryTelegramUserId ??
+    (peerType === "user" ? peerId : lastMsg?.from_telegram_user_id ?? null);
 
   const {
     data: deposits = [],
@@ -64,18 +82,22 @@ export function TelegramTrackerChatThreadPage() {
   );
 
   const {
-    data: messages = [],
-    isLoading,
-    error: messagesError,
-  } = useGetTelegramTrackerChatMessagesQuery(
-    { trackerId, peerType, peerId },
-    { skip: !authenticated || !peerOk, pollingInterval: 30_000 }
+    data: trashStatus,
+    isFetching: isTrashStatusFetching,
+    error: trashStatusError,
+  } = useGetTelegramUserTrashStatusQuery(
+    { telegramUserId: depositTelegramUserId },
+    { skip: !authenticated || !depositTelegramUserId }
   );
 
   const [
     createDepositConversion,
     { isLoading: isCreatingDeposit, error: createDepositError },
   ] = useCreateDepositConversionMutation();
+  const [
+    markTelegramUserAsTrash,
+    { isLoading: isMarkingTrash, error: markTrashError },
+  ] = useMarkTelegramUserAsTrashMutation();
   const [logout, { isLoading: isLogoutLoading, error: logoutError }] = useLogoutMutation();
 
   async function handleLogout() {
@@ -112,6 +134,24 @@ export function TelegramTrackerChatThreadPage() {
     }
   }
 
+  async function handleMarkTrash() {
+    if (!depositTelegramUserId) {
+      return;
+    }
+
+    const confirmed = window.confirm("Отправить trash в Keitaro и пометить покупателя в базе?");
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await markTelegramUserAsTrash({ telegramUserId: depositTelegramUserId }).unwrap();
+    } catch {
+      // RTK Query exposes the request error through markTrashError.
+    }
+  }
+
   if (isCheckingAuth) {
     return <main className="container">Проверка сессии...</main>;
   }
@@ -124,7 +164,6 @@ export function TelegramTrackerChatThreadPage() {
     return <Navigate to="/telegram-trackers" replace />;
   }
 
-  const lastMsg = messages.length ? messages[messages.length - 1] : null;
   const lastSender = formatPersonName(lastMsg?.from_first_name, lastMsg?.from_last_name);
   const title =
     peerType === "chat"
@@ -138,6 +177,8 @@ export function TelegramTrackerChatThreadPage() {
     messagesError?.data?.error ??
     depositsError?.data?.error ??
     createDepositError?.data?.error ??
+    trashStatusError?.data?.error ??
+    markTrashError?.data?.error ??
     logoutError?.data?.error ??
     "";
 
@@ -173,6 +214,29 @@ export function TelegramTrackerChatThreadPage() {
         <p>
           <strong>Чат:</strong> {title}
         </p>
+        <div className="chat-status-row">
+          <p>
+            <strong>Покупатель:</strong> {depositTelegramUserId ?? "не найден"}
+          </p>
+          {trashStatus?.is_trash ? (
+            <span className="status-badge status-badge-danger">
+              Trash{trashStatus.trash_marked_at ? ` · ${formatWhen(trashStatus.trash_marked_at)}` : ""}
+            </span>
+          ) : (
+            <span className="status-badge">Не trash</span>
+          )}
+        </div>
+        <div className="actions">
+          <button
+            type="button"
+            className="button-danger"
+            onClick={() => void handleMarkTrash()}
+            disabled={!depositTelegramUserId || isMarkingTrash || trashStatus?.is_trash}
+          >
+            {isMarkingTrash ? "Отправляем..." : "Отправить как trash"}
+          </button>
+          {isTrashStatusFetching ? <span className="hint">Проверка статуса...</span> : null}
+        </div>
       </section>
 
       {depositTelegramUserId && (

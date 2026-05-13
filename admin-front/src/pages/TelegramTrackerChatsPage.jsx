@@ -147,12 +147,13 @@ export function TelegramTrackerChatsPage() {
             return (
               <Link
                 key={`${c.peer_type}-${c.peer_id}`}
-                to={`/telegram-trackers/${trackerId}/chats/${c.peer_type}/${c.peer_id}`}
+                to={`/telegram-trackers/${trackerId}/chats/${c.peer_type}/${c.peer_id}?buyer=${c.buyer_telegram_user_id}`}
                 className="rule-item chat-row-link"
               >
-                <p>
+                <div className="chat-row-title">
                   <strong>{title}</strong>
-                </p>
+                  {c.is_trash ? <span className="status-badge status-badge-danger">Trash</span> : null}
+                </div>
                 <p className="chat-preview">{preview}</p>
                 <p className="message-meta">Последнее: {when}</p>
               </Link>

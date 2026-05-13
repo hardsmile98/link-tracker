@@ -7,8 +7,13 @@ import {
   parseClickQueryParams
 } from "../utils/click-query-params";
 import { depositConversionService } from "./deposit-conversion.service";
+import { trashConversionService } from "./trash-conversion.service";
 
-type ManagerStep = "idle" | "awaiting_forward" | "awaiting_amount";
+type ManagerStep =
+  | "idle"
+  | "awaiting_forward"
+  | "awaiting_amount"
+  | "awaiting_trash_forward";
 
 type PendingConversion = {
   attributionId: string;
@@ -28,8 +33,10 @@ type ManagerSession = {
 };
 
 const SEND_CLIENT_BUTTON = "Отправить клиента";
+const SEND_TRASH_BUTTON = "Отправить трэш";
 const FINISH_SESSION_BUTTON = "Завершить сессию";
 const SEND_ANOTHER_BUTTON = "Отправить еще клиента";
+const SEND_ANOTHER_TRASH_BUTTON = "Отправить еще трэш";
 
 class TelegramManagerBotRuntime {
   public readonly webhookPath = env.TELEGRAM_MANAGER_WEBHOOK_PATH;
@@ -90,6 +97,25 @@ class TelegramManagerBotRuntime {
       );
     });
 
+    this.bot.hears(SEND_TRASH_BUTTON, async (ctx) => {
+      const session = this.ensureSession(ctx);
+
+      if (!session.isAuthorized) {
+        await ctx.reply("Сначала введите пароль менеджера.");
+        return;
+      }
+
+      session.step = "awaiting_trash_forward";
+      session.pendingConversion = null;
+
+      await ctx.reply(
+        "Перешлите сообщение покупателя, чтобы отправить трэш в Keitaro.",
+        {
+          reply_markup: this.getAuthorizedKeyboard()
+        }
+      );
+    });
+
     this.bot.hears(FINISH_SESSION_BUTTON, async (ctx) => {
       const session = this.ensureSession(ctx);
 
@@ -115,6 +141,22 @@ class TelegramManagerBotRuntime {
       }
 
       session.step = "awaiting_forward";
+      session.pendingConversion = null;
+
+      await ctx.reply("Ок, перешлите сообщение следующего покупателя.", {
+        reply_markup: this.getAuthorizedKeyboard()
+      });
+    });
+
+    this.bot.hears(SEND_ANOTHER_TRASH_BUTTON, async (ctx) => {
+      const session = this.ensureSession(ctx);
+
+      if (!session.isAuthorized) {
+        await ctx.reply("Сначала введите пароль менеджера.");
+        return;
+      }
+
+      session.step = "awaiting_trash_forward";
       session.pendingConversion = null;
 
       await ctx.reply("Ок, перешлите сообщение следующего покупателя.", {
@@ -166,13 +208,15 @@ class TelegramManagerBotRuntime {
 
         if (!pendingConversion) {
           session.step = "idle";
-  
           session.pendingConversion = null;
-  
-          await ctx.reply("Пользователь или клик не найдены. Попробуйте другого.", {
-            reply_markup: this.getAuthorizedKeyboard()
-          });
-  
+
+          await ctx.reply(
+            "Пользователь или клик не найдены. Попробуйте другого.",
+            {
+              reply_markup: this.getAuthorizedKeyboard()
+            }
+          );
+
           return;
         }
 
@@ -180,6 +224,49 @@ class TelegramManagerBotRuntime {
         session.pendingConversion = pendingConversion;
 
         await ctx.reply("Введите сумму покупки в USD (только число).");
+        return;
+      }
+
+      if (session.step === "awaiting_trash_forward") {
+        if (this.isHiddenForwardOrigin(ctx.message)) {
+          await ctx.reply(
+            "Пересылка скрыта: Telegram не передаёт ID покупателя."
+          );
+          return;
+        }
+
+        const forwardedUserId = this.extractForwardedTelegramUserId(ctx);
+
+        if (!forwardedUserId) {
+          await ctx.reply("Нужно пересланное сообщение от покупателя.");
+          return;
+        }
+
+        const pendingConversion =
+          await this.resolvePendingConversion(forwardedUserId);
+
+        if (!pendingConversion?.subid) {
+          session.step = "idle";
+          session.pendingConversion = null;
+
+          await ctx.reply(
+            "Пользователь или subid клика не найдены. Попробуйте другого.",
+            {
+              reply_markup: this.getAuthorizedKeyboard()
+            }
+          );
+
+          return;
+        }
+
+        await trashConversionService.sendAndMarkTrash(pendingConversion.telegramUserId);
+
+        session.step = "idle";
+        session.pendingConversion = null;
+
+        await ctx.reply("Трэш событие отправлено в Keitaro.", {
+          reply_markup: this.getPostTrashKeyboard()
+        });
         return;
       }
 
@@ -232,7 +319,7 @@ class TelegramManagerBotRuntime {
     }
 
     const existing = this.sessions.get(fromId);
-  
+
     if (existing) {
       return existing;
     }
@@ -242,19 +329,30 @@ class TelegramManagerBotRuntime {
       step: "idle",
       pendingConversion: null
     };
-  
+
     this.sessions.set(fromId, created);
-  
+
     return created;
   }
 
   private getAuthorizedKeyboard() {
-    return new Keyboard().text(SEND_CLIENT_BUTTON).resized();
+    return new Keyboard()
+      .text(SEND_CLIENT_BUTTON)
+      .row()
+      .text(SEND_TRASH_BUTTON)
+      .resized();
   }
 
   private getPostConversionKeyboard() {
     return new Keyboard()
       .text(SEND_ANOTHER_BUTTON)
+      .text(FINISH_SESSION_BUTTON)
+      .resized();
+  }
+
+  private getPostTrashKeyboard() {
+    return new Keyboard()
+      .text(SEND_ANOTHER_TRASH_BUTTON)
       .text(FINISH_SESSION_BUTTON)
       .resized();
   }
@@ -360,6 +458,7 @@ class TelegramManagerBotRuntime {
   private async sendConversion(conversion: PendingConversion, amountUsd: number) {
     await depositConversionService.sendAndRecordDeposit(conversion, amountUsd);
   }
+
 }
 
 export const telegramManagerBotRuntime = new TelegramManagerBotRuntime();

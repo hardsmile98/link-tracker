@@ -23,11 +23,14 @@ model Attribution {
   id                        String                     @id @default(uuid()) @db.Uuid
   clickUuid                 String?                    @map("click_id") @db.Uuid
   telegramUserId            BigInt                     @map("telegram_user_id")
+  isTrash                   Boolean                    @default(false) @map("is_trash")
+  trashMarkedAt             DateTime?                  @map("trash_marked_at")
   createdAt                 DateTime                   @default(now()) @map("created_at")
   click                     Click?                     @relation(fields: [clickUuid], references: [id], onDelete: Restrict)
   depositConversions        DepositConversion[]
 
   @@unique([telegramUserId])
+  @@index([isTrash, trashMarkedAt])
   @@index([telegramUserId, createdAt])
   @@map("attributions")
 }

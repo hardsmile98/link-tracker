@@ -63,6 +63,25 @@ export const telegramTrackersApi = baseApi.injectEndpoints({
       transformResponse: (response) => response.data ?? [],
       providesTags: (_result, _error, arg) => [{ type: "TelegramTrackerChats", id: arg.trackerId }],
     }),
+    getTelegramUserTrashStatus: builder.query({
+      query: ({ telegramUserId }) => ({
+        url: `/api/admin/telegram-users/${telegramUserId}/trash`,
+      }),
+      transformResponse: (response) => response.data ?? null,
+      providesTags: (_result, _error, arg) => [
+        { type: "TelegramUserTrash", id: arg.telegramUserId },
+      ],
+    }),
+    markTelegramUserAsTrash: builder.mutation({
+      query: ({ telegramUserId }) => ({
+        url: `/api/admin/telegram-users/${telegramUserId}/trash`,
+        method: "POST",
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "TelegramUserTrash", id: arg.telegramUserId },
+        "TelegramTrackerChats",
+      ],
+    }),
     getTelegramTrackerChatMessages: builder.query({
       query: ({ trackerId, peerType, peerId }) => ({
         url: `/api/admin/telegram-trackers/${trackerId}/chats/${peerType}/${peerId}/messages`,
@@ -79,6 +98,8 @@ export const {
   useGetTelegramTrackersQuery,
   useGetTelegramTrackerChatsQuery,
   useGetTelegramTrackerChatMessagesQuery,
+  useGetTelegramUserTrashStatusQuery,
+  useMarkTelegramUserAsTrashMutation,
   useStartTelegramTrackerAuthMutation,
   useVerifyTelegramTrackerCodeMutation,
   useVerifyTelegramTrackerPasswordMutation,

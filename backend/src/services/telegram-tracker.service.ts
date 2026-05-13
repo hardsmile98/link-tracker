@@ -196,11 +196,15 @@ export class TelegramTrackerService {
       createdAt: Date;
       peerType: string;
       peerId: bigint;
+      isTrash: boolean;
+      trashMarkedAt: Date | null;
     }>
   ) {
     return rows.map((row) => ({
       peerType: row.peerType === "chat" ? ("chat" as const) : ("user" as const),
       peerId: row.peerId,
+      isTrash: row.isTrash,
+      trashMarkedAt: row.trashMarkedAt,
       lastMessage: {
         id: row.id,
         trackedAccountId: row.trackedAccountId,
@@ -243,6 +247,8 @@ export class TelegramTrackerService {
       createdAt: Date;
       peerType: string;
       peerId: bigint;
+      isTrash: boolean;
+      trashMarkedAt: Date | null;
     };
 
     const rows = await prisma.$queryRaw<IncomingChatSqlRow[]>`
@@ -289,6 +295,8 @@ export class TelegramTrackerService {
             WHEN m.chat_telegram_id IS NOT NULL THEN m.chat_telegram_id
             ELSE m.from_telegram_user_id
           END AS "peerId",
+          COALESCE(a.is_trash, false) AS "isTrash",
+          a.trash_marked_at AS "trashMarkedAt",
           ROW_NUMBER() OVER (
             PARTITION BY (
               CASE
@@ -305,6 +313,7 @@ export class TelegramTrackerService {
             ELSE CONCAT('user:', m.from_telegram_user_id::text)
           END
         CROSS JOIN params p
+        LEFT JOIN attributions a ON a.telegram_user_id = m.from_telegram_user_id
         WHERE m.tracked_account_id = p.tid
       )
       SELECT
@@ -319,7 +328,9 @@ export class TelegramTrackerService {
         "receivedAt",
         "createdAt",
         "peerType",
-        "peerId"
+        "peerId",
+        "isTrash",
+        "trashMarkedAt"
       FROM ranked
       WHERE rn = 1
       ORDER BY "receivedAt" DESC
