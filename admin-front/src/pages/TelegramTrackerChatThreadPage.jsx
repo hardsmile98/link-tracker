@@ -231,11 +231,10 @@ export function TelegramTrackerChatThreadPage() {
             type="button"
             className="button-danger"
             onClick={() => void handleMarkTrash()}
-            disabled={!depositTelegramUserId || isMarkingTrash || trashStatus?.is_trash}
+            disabled={isTrashStatusFetching || !depositTelegramUserId || isMarkingTrash || trashStatus?.is_trash}
           >
-            {isMarkingTrash ? "Отправляем..." : "Отправить как trash"}
+            {isTrashStatusFetching ? 'Проверка статуса...' : isMarkingTrash ? "Отправляем..." : "Отправить как trash"}
           </button>
-          {isTrashStatusFetching ? <span className="hint">Проверка статуса...</span> : null}
         </div>
       </section>
 
