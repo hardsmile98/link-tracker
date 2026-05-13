@@ -52,8 +52,7 @@ export function TelegramTrackerChatThreadPage() {
     Boolean(peerId) &&
     /^-?\d+$/.test(peerId);
 
-  const depositTelegramUserId =
-    peerType === "user" && peerId ? peerId : null;
+  const depositTelegramUserId = peerId
 
   const {
     data: deposits = [],
@@ -176,7 +175,7 @@ export function TelegramTrackerChatThreadPage() {
         </p>
       </section>
 
-      {depositTelegramUserId ? (
+      {depositTelegramUserId && (
         <section className="card">
           <div className="rules-header">
             <h2>Депозиты пользователя {depositTelegramUserId}</h2>
@@ -184,12 +183,6 @@ export function TelegramTrackerChatThreadPage() {
               <button type="button" onClick={() => setIsDepositModalOpen(true)}>
                 Добавить депозит
               </button>
-              <Link
-                to={`/deposit-conversions?user=${depositTelegramUserId}`}
-                className="button button-link button-secondary"
-              >
-                Все депозиты в списке
-              </Link>
             </div>
           </div>
           {isDepositsLoading ? <p>Загрузка депозитов...</p> : null}
@@ -212,14 +205,7 @@ export function TelegramTrackerChatThreadPage() {
             ))}
           </div>
         </section>
-      ) : peerType === "chat" ? (
-        <section className="card">
-          <p className="hint">
-            Для группового чата укажите покупателя в ссылке (?buyer=TelegramID), чтобы видеть его депозиты, либо
-            откройте чат из списка депозитов.
-          </p>
-        </section>
-      ) : null}
+      )}
 
       <section className="card">
         <h2>Переписка</h2>
