@@ -7,6 +7,7 @@ import { router } from "./app/router";
 import "./index.css";
 import "./App.css";
 import "./features/auth/api/authApi";
+import "./features/deposit-conversions/api/depositConversionsApi";
 import "./features/redirect-rules/api/redirectRulesApi";
 import "./features/telegram-trackers/api/telegramTrackersApi";
 

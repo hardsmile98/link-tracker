@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import { AdAccountsPage } from "../pages/AdAccountsPage";
+import { DepositConversionsPage } from "../pages/DepositConversionsPage";
 import { LoginPage } from "../pages/LoginPage";
 import { RedirectRulesPage } from "../pages/RedirectRulesPage";
 import { TelegramTrackerChatThreadPage } from "../pages/TelegramTrackerChatThreadPage";
@@ -18,6 +19,10 @@ export const router = createBrowserRouter([
   {
     path: "/ad-accounts",
     element: <AdAccountsPage />,
+  },
+  {
+    path: "/deposit-conversions",
+    element: <DepositConversionsPage />,
   },
   {
     path: "/telegram-trackers/:trackerId/chats/:peerType/:peerId",

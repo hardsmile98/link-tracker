@@ -20,15 +20,29 @@ model Click {
 }
 
 model Attribution {
-  id             String   @id @default(uuid()) @db.Uuid
-  clickUuid      String?  @map("click_id") @db.Uuid
-  telegramUserId BigInt   @map("telegram_user_id")
-  createdAt      DateTime @default(now()) @map("created_at")
-  click          Click?   @relation(fields: [clickUuid], references: [id], onDelete: Restrict)
+  id                        String                     @id @default(uuid()) @db.Uuid
+  clickUuid                 String?                    @map("click_id") @db.Uuid
+  telegramUserId            BigInt                     @map("telegram_user_id")
+  createdAt                 DateTime                   @default(now()) @map("created_at")
+  click                     Click?                     @relation(fields: [clickUuid], references: [id], onDelete: Restrict)
+  depositConversions        DepositConversion[]
 
   @@unique([telegramUserId])
   @@index([telegramUserId, createdAt])
   @@map("attributions")
+}
+
+model DepositConversion {
+  id             String      @id @default(uuid()) @db.Uuid
+  attributionId  String      @map("attribution_id") @db.Uuid
+  telegramUserId BigInt     @map("telegram_user_id")
+  amountUsd      Decimal    @map("amount_usd") @db.Decimal(14, 2)
+  createdAt      DateTime   @default(now()) @map("created_at")
+  attribution    Attribution @relation(fields: [attributionId], references: [id], onDelete: Restrict)
+
+  @@index([attributionId, createdAt])
+  @@index([telegramUserId, createdAt])
+  @@map("deposit_conversions")
 }
 
 model RedirectRule {

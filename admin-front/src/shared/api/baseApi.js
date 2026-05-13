@@ -12,6 +12,6 @@ export const baseApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Auth", "RedirectRules", "AdAccounts", "TelegramTrackers", "TelegramTrackerChats", "TelegramTrackerChatMessages"],
+  tagTypes: ["Auth", "RedirectRules", "AdAccounts", "DepositConversions", "TelegramTrackers", "TelegramTrackerChats", "TelegramTrackerChatMessages"],
   endpoints: () => ({}),
 });

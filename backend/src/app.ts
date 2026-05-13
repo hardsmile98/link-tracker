@@ -7,6 +7,7 @@ import { adAccountRouter } from "./routes/ad-account.routes";
 import { adminAuthRouter } from "./routes/admin-auth.routes";
 import { attributionRouter } from "./routes/attribution.routes";
 import { clickRouter } from "./routes/click.routes";
+import { depositConversionRouter } from "./routes/deposit-conversion.routes";
 import { redirectRuleRouter } from "./routes/redirect-rule.routes";
 import { telegramManagerBotRuntime } from "./services/telegram-manager-bot.runtime";
 import { telegramTrackerRouter } from "./routes/telegram-tracker.routes";
@@ -39,6 +40,7 @@ app.use(attributionRouter);
 app.use(adminAuthRouter);
 app.use(redirectRuleRouter);
 app.use(adAccountRouter);
+app.use(depositConversionRouter);
 app.use(telegramTrackerRouter);
 
 app.use(errorHandler);

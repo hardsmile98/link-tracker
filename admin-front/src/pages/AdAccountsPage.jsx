@@ -10,6 +10,7 @@ import { CreateAdAccountForm } from "../features/ad-accounts/components/CreateAd
 
 export function AdAccountsPage() {
   const navigate = useNavigate();
+  
   const { data: meData, isLoading: isCheckingAuth } = useGetMeQuery();
   const authenticated = Boolean(meData?.authenticated);
 
@@ -53,6 +54,9 @@ export function AdAccountsPage() {
         <div className="actions">
           <Link to="/" className="button button-link button-secondary">
             Редиректы
+          </Link>
+          <Link to="/deposit-conversions" className="button button-link button-secondary">
+            Депозиты
           </Link>
           <Link to="/telegram-trackers" className="button button-link button-secondary">
             Telegram трекеры

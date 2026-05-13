@@ -66,6 +66,9 @@ export function TelegramTrackersPage() {
           <Link to="/ad-accounts" className="button button-link button-secondary">
             Рекламные аккаунты
           </Link>
+          <Link to="/deposit-conversions" className="button button-link button-secondary">
+            Депозиты
+          </Link>
           <button
             type="button"
             onClick={() => void handleLogout()}

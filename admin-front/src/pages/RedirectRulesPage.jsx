@@ -58,6 +58,9 @@ export function RedirectRulesPage() {
           <Link to="/ad-accounts" className="button button-link button-secondary">
             Рекламные аккаунты
           </Link>
+          <Link to="/deposit-conversions" className="button button-link button-secondary">
+            Депозиты
+          </Link>
           <Link to="/telegram-trackers" className="button button-link button-secondary">
             Telegram трекеры
           </Link>

@@ -6,12 +6,12 @@ import {
   getStringQueryParam,
   parseClickQueryParams
 } from "../utils/click-query-params";
-import { keitaroService } from "./keitaro.service";
-import { tikTokEventsService } from "./tiktok-events.service";
+import { depositConversionService } from "./deposit-conversion.service";
 
 type ManagerStep = "idle" | "awaiting_forward" | "awaiting_amount";
 
 type PendingConversion = {
+  attributionId: string;
   telegramUserId: bigint;
   subid: string | null;
   ttpixelid: string | null;
@@ -259,7 +259,6 @@ class TelegramManagerBotRuntime {
       .resized();
   }
 
-  /** Forward from a user who hid their name — no `sender_user.id` in the update. */
   private isHiddenForwardOrigin(message: Context["message"]): boolean {
     if (!message || !("forward_origin" in message)) {
       return false;
@@ -318,6 +317,7 @@ class TelegramManagerBotRuntime {
         telegramUserId
       },
       select: {
+        id: true,
         click: {
           select: {
             queryParams: true,
@@ -346,6 +346,7 @@ class TelegramManagerBotRuntime {
     }
 
     return {
+      attributionId: attribution.id,
       telegramUserId,
       subid,
       ttpixelid,
@@ -357,22 +358,7 @@ class TelegramManagerBotRuntime {
   }
 
   private async sendConversion(conversion: PendingConversion, amountUsd: number) {
-    if (conversion.subid) {
-      await keitaroService.sendLeadPostback(conversion.subid, "deposit", amountUsd);
-    }
-
-    if (conversion.ttpixelid && conversion.ttclid) {
-      await tikTokEventsService.sendPurchaseEvent({
-        telegramUserId: conversion.telegramUserId,
-        pixelId: conversion.ttpixelid,
-        ttclid: conversion.ttclid,
-        _ttp: conversion._ttp,
-        ip: conversion.ip,
-        userAgent: conversion.userAgent,
-        value: amountUsd,
-        currency: "USD"
-      });
-    }
+    await depositConversionService.sendAndRecordDeposit(conversion, amountUsd);
   }
 }
 
