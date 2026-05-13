@@ -255,7 +255,7 @@ class TelegramManagerBotRuntime {
   private extractForwardedTelegramUserId(ctx: Context): bigint | null {
     const message = ctx.message;
 
-    logger.info({ message }, 'Extracting forwarded Telegram user ID');
+    logger.info({ ctx }, 'Extracting forwarded Telegram user ID');
 
     if (!message) {
       logger.warn({ message }, 'No message found');
