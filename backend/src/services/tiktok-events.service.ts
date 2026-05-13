@@ -59,7 +59,7 @@ class TikTokEventsService {
               {
                 event,
                 event_time: Math.floor(Date.now() / 1000),
-                event_id: `${telegramUserId}:${Date.now()}:${eventSuffix}`,
+                event_id: `${telegramUserId.toString()}:${eventSuffix}`,
                 user: {
                   ttclid,
                   ttp: _ttp ?? undefined,
