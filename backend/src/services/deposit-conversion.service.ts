@@ -6,6 +6,7 @@ import {
 } from "../utils/click-query-params";
 import { AppError } from "../utils/app-error";
 import { keitaroService } from "./keitaro.service";
+import { googleEventsService } from "./google-events.service";
 import { tikTokEventsService } from "./tiktok-events.service";
 
 type RecordDepositInput = {
@@ -30,13 +31,16 @@ type IncomingThreadRow = {
   chat_telegram_id: bigint | null;
 };
 
-type DepositConversionAttribution = {
+export type DepositConversionAttribution = {
   attributionId: string;
   telegramUserId: bigint;
   subid: string | null;
   ttpixelid: string | null;
   ttclid: string | null;
   _ttp: string | null;
+  gapixelid: string | null;
+  gclid: string | null;
+  _ga: string | null;
   ip: string | null;
   userAgent: string | null;
 };
@@ -83,8 +87,9 @@ export class DepositConversionService {
 
     const subid = getStringQueryParam(queryParams, "subid");
     const ttpixelid = getStringQueryParam(queryParams, "ttpixelid");
+    const gapixelid = getStringQueryParam(queryParams, "gapixelid");
 
-    if (!subid && !ttpixelid) {
+    if (!subid && !ttpixelid && !gapixelid) {
       return null;
     }
 
@@ -95,6 +100,9 @@ export class DepositConversionService {
       ttpixelid,
       ttclid: getStringQueryParam(queryParams, "ttclid"),
       _ttp: getStringQueryParam(queryParams, "_ttp"),
+      gapixelid,
+      gclid: getStringQueryParam(queryParams, "gclid"),
+      _ga: getStringQueryParam(queryParams, "_ga"),
       ip: attribution.click.ip,
       userAgent: attribution.click.userAgent
     };
@@ -114,6 +122,19 @@ export class DepositConversionService {
         pixelId: conversion.ttpixelid,
         ttclid: conversion.ttclid,
         _ttp: conversion._ttp,
+        ip: conversion.ip,
+        userAgent: conversion.userAgent,
+        value: amountUsd,
+        currency: "USD"
+      });
+    }
+
+    if (conversion.gapixelid && conversion.gclid) {
+      await googleEventsService.sendPurchaseEvent({
+        telegramUserId: conversion.telegramUserId,
+        pixelId: conversion.gapixelid,
+        gclid: conversion.gclid,
+        _ga: conversion._ga,
         ip: conversion.ip,
         userAgent: conversion.userAgent,
         value: amountUsd,

@@ -6,7 +6,10 @@ import {
   getStringQueryParam,
   parseClickQueryParams
 } from "../utils/click-query-params";
-import { depositConversionService } from "./deposit-conversion.service";
+import {
+  depositConversionService,
+  type DepositConversionAttribution
+} from "./deposit-conversion.service";
 import { trashConversionService } from "./trash-conversion.service";
 
 type ManagerStep =
@@ -15,16 +18,7 @@ type ManagerStep =
   | "awaiting_amount"
   | "awaiting_trash_forward";
 
-type PendingConversion = {
-  attributionId: string;
-  telegramUserId: bigint;
-  subid: string | null;
-  ttpixelid: string | null;
-  ttclid: string | null;
-  _ttp: string | null;
-  ip: string | null;
-  userAgent: string | null;
-};
+type PendingConversion = DepositConversionAttribution;
 
 type ManagerSession = {
   isAuthorized: boolean;
@@ -438,8 +432,9 @@ class TelegramManagerBotRuntime {
 
     const subid = getStringQueryParam(queryParams, "subid");
     const ttpixelid = getStringQueryParam(queryParams, "ttpixelid");
+    const gapixelid = getStringQueryParam(queryParams, "gapixelid");
 
-    if (!subid && !ttpixelid) {
+    if (!subid && !ttpixelid && !gapixelid) {
       return null;
     }
 
@@ -450,6 +445,9 @@ class TelegramManagerBotRuntime {
       ttpixelid,
       ttclid: getStringQueryParam(queryParams, "ttclid"),
       _ttp: getStringQueryParam(queryParams, "_ttp"),
+      gapixelid,
+      gclid: getStringQueryParam(queryParams, "gclid"),
+      _ga: getStringQueryParam(queryParams, "_ga"),
       ip: attribution.click.ip,
       userAgent: attribution.click.userAgent
     };

@@ -28,6 +28,7 @@
       scriptSubid: script.dataset.subid,
       scriptTargetUrl: script.dataset.targetUrl,
       scriptTargetTtp: script.dataset.targetTtp,
+      scriptTargetGa: script.dataset.targetGa,
       scriptTargetFbp: script.dataset.targetFbp,
       scriptTargetClass: script.dataset.targetClass,
     };
@@ -53,6 +54,16 @@
 
       if (_ttp) {
         trackingUrl.searchParams.set("_ttp", _ttp);
+      }
+    }
+
+    if (config.scriptTargetGa) {
+      trackingUrl.searchParams.set("gapixelid", config.scriptTargetGa);
+
+      const _ga = getCookie("_ga");
+
+      if (_ga) {
+        trackingUrl.searchParams.set("_ga", _ga);
       }
     }
 

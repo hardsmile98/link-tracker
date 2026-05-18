@@ -30,6 +30,7 @@ export function CreateAdAccountForm({ onCreate, isLoading }) {
           <select value={platform} onChange={(event) => setPlatform(event.target.value)}>
             <option value="facebook">Facebook</option>
             <option value="tiktok">TikTok</option>
+            <option value="google">Google</option>
           </select>
         </label>
 

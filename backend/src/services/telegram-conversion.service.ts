@@ -2,6 +2,7 @@ import { prisma } from "../config/prisma";
 import { logger } from "../config/logger";
 import { getStringQueryParam, parseClickQueryParams } from "../utils/click-query-params";
 import { keitaroService } from "./keitaro.service";
+import { googleEventsService } from "./google-events.service";
 import { tikTokEventsService } from "./tiktok-events.service";
 
 class TelegramConversionService {
@@ -47,13 +48,16 @@ class TelegramConversionService {
     const ttpixelid = getStringQueryParam(queryParams, "ttpixelid");
     const ttclid = getStringQueryParam(queryParams, "ttclid");
     const _ttp = getStringQueryParam(queryParams, "_ttp");
+    const gapixelid = getStringQueryParam(queryParams, "gapixelid");
+    const gclid = getStringQueryParam(queryParams, "gclid");
+    const _ga = getStringQueryParam(queryParams, "_ga");
 
-    if (!subid && !(ttpixelid && ttclid)) {
+    if (!subid && !(ttpixelid && ttclid) && !(gapixelid && gclid)) {
       return;
     }
 
     logger.info(
-      { accountId, senderId, subid, ttpixelid, ttclid },
+      { accountId, senderId, subid, ttpixelid, ttclid, gapixelid, gclid },
       "Sending first message conversions"
     );
 
@@ -70,6 +74,19 @@ class TelegramConversionService {
           pixelId: ttpixelid,
           ttclid,
           _ttp,
+          ip: attribution.click.ip,
+          userAgent: attribution.click.userAgent
+        })
+      );
+    }
+
+    if (gapixelid && gclid) {
+      tasks.push(
+        googleEventsService.sendContactEvent({
+          telegramUserId: senderId,
+          pixelId: gapixelid,
+          gclid,
+          _ga,
           ip: attribution.click.ip,
           userAgent: attribution.click.userAgent
         })
