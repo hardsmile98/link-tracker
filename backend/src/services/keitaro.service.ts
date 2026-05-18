@@ -2,7 +2,11 @@ import { env } from '../config/env';
 import { logger } from '../config/logger';
 
 class KeitaroService {
-  public async sendLeadPostback(subid: string, status: 'lead' | 'deposit' | 'trash', value?: number) {
+  public async sendLeadPostback(
+    subid: string,
+    status: "lead" | "registration" | "deposit" | "trash",
+    value?: number
+  ) {
     const postbackBaseUrl = env.KEITARO_POSTBACK_URL ?? null;
 
     if (!postbackBaseUrl) {

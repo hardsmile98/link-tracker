@@ -3,9 +3,9 @@ import { prisma } from '../config/prisma';
 
 class TikTokEventsService {
   private async sendEvent(input: {
-    event: "Contact" | "Purchase";
-    eventSuffix: "contact" | "purchase";
-    telegramUserId: bigint;
+    event: "Contact" | "Lead" | "Purchase";
+    eventSuffix: "contact" | "lead" | "purchase";
+    externalId: string;
     pixelId: string;
     ttclid: string | null;
     _ttp: string | null;
@@ -17,7 +17,7 @@ class TikTokEventsService {
     const {
       event,
       eventSuffix,
-      telegramUserId,
+      externalId,
       pixelId,
       ttclid,
       _ttp,
@@ -59,11 +59,11 @@ class TikTokEventsService {
               {
                 event,
                 event_time: Math.floor(Date.now() / 1000),
-                event_id: `${telegramUserId.toString()}:${eventSuffix}`,
+                event_id: `${externalId}:${eventSuffix}`,
                 user: {
                   ttclid,
                   ttp: _ttp ?? undefined,
-                  external_id: telegramUserId.toString(),
+                  external_id: externalId,
                   ip: ip ?? undefined,
                   user_agent: userAgent ?? undefined
                 },
@@ -99,6 +99,28 @@ class TikTokEventsService {
     }
   }
 
+  public async sendLeadEvent(input: {
+    clickId: string;
+    pixelId: string;
+    ttclid: string | null;
+    _ttp: string | null;
+    ip: string | null;
+    userAgent: string | null;
+  }) {
+    const { clickId, pixelId, ttclid, _ttp, ip, userAgent } = input;
+
+    await this.sendEvent({
+      event: "Lead",
+      eventSuffix: "lead",
+      externalId: clickId,
+      pixelId,
+      ttclid,
+      _ttp,
+      ip,
+      userAgent
+    });
+  }
+
   public async sendContactEvent(input: {
     telegramUserId: bigint;
     pixelId: string;
@@ -112,7 +134,7 @@ class TikTokEventsService {
     await this.sendEvent({
       event: "Contact",
       eventSuffix: "contact",
-      telegramUserId,
+      externalId: telegramUserId.toString(),
       pixelId,
       ttclid,
       _ttp,
@@ -137,7 +159,7 @@ class TikTokEventsService {
     await this.sendEvent({
       event: "Purchase",
       eventSuffix: "purchase",
-      telegramUserId,
+      externalId: telegramUserId.toString(),
       pixelId,
       ttclid,
       _ttp,

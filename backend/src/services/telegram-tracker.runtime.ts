@@ -225,7 +225,7 @@ class TelegramTrackerRuntime {
         logger.warn({ accountId, senderId }, 'Failed to get sender entity');
       }
 
-      await telegramConversionService.processFirstMessage(accountId, senderId);
+      void telegramConversionService.processFirstMessage(accountId, senderId);
 
       await prisma.incomingMessage.create({
         data: {

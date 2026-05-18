@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma";
+import { clickConversionService } from "./click-conversion.service";
 
 
 type CreateClickInput = {
@@ -20,6 +21,8 @@ export class ClickService {
         queryParams: input.queryParams
       }
     });
+
+    void clickConversionService.sendLeadConversions(click);
 
     return click;
   }
