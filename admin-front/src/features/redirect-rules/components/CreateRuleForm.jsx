@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 export function CreateRuleForm({ onCreate, isLoading, fallbackRule }) {
+  const [createName, setCreateName] = useState("");
   const [createReferrer, setCreateReferrer] = useState("");
   const [createRedirectUrl, setCreateRedirectUrl] = useState("");
 
@@ -8,10 +9,12 @@ export function CreateRuleForm({ onCreate, isLoading, fallbackRule }) {
     event.preventDefault();
 
     await onCreate({
+      name: createName.trim(),
       referrer: createReferrer.trim() === "" ? null : createReferrer.trim(),
       redirect_url: createRedirectUrl.trim(),
     });
 
+    setCreateName("");
     setCreateReferrer("");
     setCreateRedirectUrl("");
   }
@@ -20,6 +23,15 @@ export function CreateRuleForm({ onCreate, isLoading, fallbackRule }) {
     <section className="card">
       <h2>Добавить правило</h2>
       <form onSubmit={handleSubmit} className="form-grid">
+        <label>
+          Название
+          <input
+            required
+            value={createName}
+            onChange={(event) => setCreateName(event.target.value)}
+            placeholder="Facebook — основной"
+          />
+        </label>
         <label>
           Referrer (пусто = fallback)
           <input

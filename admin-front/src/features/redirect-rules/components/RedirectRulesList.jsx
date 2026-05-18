@@ -10,11 +10,13 @@ export function RedirectRulesList({
   isMutating,
 }) {
   const [editingRuleId, setEditingRuleId] = useState(null);
+  const [editName, setEditName] = useState("");
   const [editReferrer, setEditReferrer] = useState("");
   const [editRedirectUrl, setEditRedirectUrl] = useState("");
 
   function beginEdit(rule) {
     setEditingRuleId(rule.id);
+    setEditName(rule.name);
     setEditReferrer(rule.referrer ?? "");
     setEditRedirectUrl(rule.redirectUrl);
   }
@@ -23,6 +25,7 @@ export function RedirectRulesList({
     await onUpdate({
       id: ruleId,
       payload: {
+        name: editName.trim(),
         referrer: editReferrer.trim() === "" ? null : editReferrer.trim(),
         redirect_url: editRedirectUrl.trim(),
       },
@@ -47,6 +50,14 @@ export function RedirectRulesList({
           <article key={rule.id} className="rule-item">
             {editingRuleId === rule.id ? (
               <div className="form-grid">
+                <label>
+                  Название
+                  <input
+                    required
+                    value={editName}
+                    onChange={(event) => setEditName(event.target.value)}
+                  />
+                </label>
                 <label>
                   Referrer
                   <input
@@ -82,6 +93,9 @@ export function RedirectRulesList({
               </div>
             ) : (
               <>
+                <p>
+                  <strong>Название:</strong> {rule.name}
+                </p>
                 <p>
                   <strong>Referrer:</strong> {rule.referrer ?? "fallback"}
                 </p>

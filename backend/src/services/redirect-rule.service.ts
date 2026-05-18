@@ -3,12 +3,14 @@ import { prisma } from "../config/prisma";
 import { AppError } from "../utils/app-error";
 
 type CreateRedirectRuleInput = {
+  name: string;
   referrer: string | null;
   redirectUrl: string;
 };
 
 type UpdateRedirectRuleInput = {
   id: string;
+  name?: string;
   referrer?: string | null;
   redirectUrl?: string;
 };
@@ -26,6 +28,7 @@ export class RedirectRuleService {
     try {
       return await prisma.redirectRule.create({
         data: {
+          name: input.name,
           referrer: input.referrer,
           redirectUrl: input.redirectUrl
         }
@@ -49,7 +52,11 @@ export class RedirectRuleService {
 
     await this.ensureSingleFallback(nextReferrer, existingRule.id);
 
-    const data: { referrer?: string | null; redirectUrl?: string } = {};
+    const data: { name?: string; referrer?: string | null; redirectUrl?: string } = {};
+
+    if (input.name !== undefined) {
+      data.name = input.name;
+    }
 
     if (input.referrer !== undefined) {
       data.referrer = input.referrer;

@@ -10,6 +10,7 @@ export const redirectRulesApi = baseApi.injectEndpoints({
       transformResponse: (response) =>
         (response.data ?? []).map((rule) => ({
           id: rule.id,
+          name: rule.name,
           referrer: rule.referrer,
           redirectUrl: rule.redirect_url,
         })),
