@@ -50,7 +50,7 @@ model DepositConversion {
 
 model RedirectRule {
   id          String   @id @default(uuid()) @db.Uuid
-  name        String   @db.Text
+  name        String   @default("") @db.Text
   referrer    String?  @unique @db.Text
   redirectUrl String   @map("redirect_url") @db.Text
   createdAt   DateTime @default(now()) @map("created_at")
