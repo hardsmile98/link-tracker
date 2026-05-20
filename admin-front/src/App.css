@@ -134,6 +134,7 @@ select {
   margin-top: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
+  word-break: break-word;
 }
 
 .chat-row-title,
@@ -142,6 +143,10 @@ select {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.chat-row-title strong {
+  word-break: break-word;
 }
 
 .chat-status-row {
