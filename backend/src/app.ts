@@ -11,6 +11,7 @@ import { depositConversionRouter } from "./routes/deposit-conversion.routes";
 import { redirectRuleRouter } from "./routes/redirect-rule.routes";
 import { telegramManagerBotRuntime } from "./services/telegram-manager-bot.runtime";
 import { telegramTrackerRouter } from "./routes/telegram-tracker.routes";
+import { tiktokLeadRouter } from "./routes/tiktok-lead.routes";
 
 export const app = express();
 
@@ -36,6 +37,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use(clickRouter);
+app.use(tiktokLeadRouter);
 app.use(attributionRouter);
 app.use(adminAuthRouter);
 app.use(redirectRuleRouter);

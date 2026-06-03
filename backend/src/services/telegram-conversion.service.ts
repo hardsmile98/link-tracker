@@ -61,7 +61,7 @@ class TelegramConversionService {
       "Sending first message conversions"
     );
 
-    const tasks: Promise<void>[] = [];
+    const tasks: Promise<unknown>[] = [];
 
     if (subid) {
       tasks.push(keitaroService.sendLeadPostback(subid, "registration"));

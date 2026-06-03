@@ -32,7 +32,7 @@ class ClickConversionService {
       "Sending click lead conversions"
     );
 
-    const tasks: Promise<void>[] = [];
+    const tasks: Promise<unknown>[] = [];
 
     if (subid) {
       tasks.push(keitaroService.sendLeadPostback(subid, "lead"));

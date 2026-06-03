@@ -13,7 +13,7 @@ class TikTokEventsService {
     userAgent: string | null;
     value?: number;
     currency?: string;
-  }) {
+  }): Promise<boolean> {
     const {
       event,
       eventSuffix,
@@ -40,7 +40,7 @@ class TikTokEventsService {
 
     if (!adAccount) {
       logger.warn({ pixelId }, "TikTok ad account not found");
-      return;
+      return false;
     }
 
     try {
@@ -90,12 +90,16 @@ class TikTokEventsService {
           },
           "TikTok events API returned non-OK status"
         );
+        return false;
       }
+
+      return true;
     } catch (error) {
       logger.warn(
         { err: error, pixelId, event },
         "Failed to send TikTok event"
       );
+      return false;
     }
   }
 
@@ -106,10 +110,10 @@ class TikTokEventsService {
     _ttp: string | null;
     ip: string | null;
     userAgent: string | null;
-  }) {
+  }): Promise<boolean> {
     const { clickId, pixelId, ttclid, _ttp, ip, userAgent } = input;
 
-    await this.sendEvent({
+    return this.sendEvent({
       event: "Lead",
       eventSuffix: "lead",
       externalId: clickId,
@@ -131,7 +135,7 @@ class TikTokEventsService {
   }) {
     const { telegramUserId, pixelId, ttclid, _ttp, ip, userAgent } = input;
 
-    await this.sendEvent({
+    return this.sendEvent({
       event: "Contact",
       eventSuffix: "contact",
       externalId: telegramUserId.toString(),
@@ -156,7 +160,7 @@ class TikTokEventsService {
     const { telegramUserId, pixelId, ttclid, _ttp, ip, userAgent, value, currency } =
       input;
 
-    await this.sendEvent({
+    return this.sendEvent({
       event: "Purchase",
       eventSuffix: "purchase",
       externalId: telegramUserId.toString(),
